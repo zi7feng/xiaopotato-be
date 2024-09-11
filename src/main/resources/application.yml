@@ -1,0 +1,36 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/tapi?serverTimezone=America/New_York # change the db to real database name
+    username: root
+    password: 123456
+  session:
+    timeout: 86400
+    store-type: redis
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017
+      database: logs
+    redis:
+      port: 6379
+      host: localhost
+      database: 0
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: false
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    global-config:
+      db-config:
+        logic-delete-field: isDelete
+        logic-delete-value: 1
+        logic-not-delete-value: 0
+
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html

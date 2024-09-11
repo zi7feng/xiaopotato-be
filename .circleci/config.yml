@@ -1,0 +1,25 @@
+version: 2.1
+
+jobs:
+  build-and-test:
+    docker:
+      - image: cimg/openjdk:19.0.1
+    steps:
+      - checkout
+      - run:
+          name: Build
+          command: mvn -B clean package
+      - run:
+          name: Test
+          command: mvn test
+      - run:
+          name: Generate Test Coverage Report
+          command: mvn jacoco:report
+      - store_artifacts:
+          path: target/site/jacoco
+          destination: jacoco-report
+
+workflows:
+  build-and-test:
+    jobs:
+      - build-and-test
