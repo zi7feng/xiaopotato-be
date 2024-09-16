@@ -225,29 +225,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- JaCoCo plugin for test coverage -->
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.7</version>
-                <executions>
-                    <!-- Prepare JaCoCo agent for code coverage analysis -->
-                    <execution>
-                        <id>default-prepare-agent</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <!-- Generate code coverage report after tests are run -->
-                    <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            
         </plugins>
     </build>
 
