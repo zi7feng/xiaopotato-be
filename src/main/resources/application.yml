@@ -1,16 +1,16 @@
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/tapi?serverTimezone=America/New_York # change the db to real database name
+    url: jdbc:mysql://localhost:3306/potato?serverTimezone=America/New_York # change the db to real database name
     username: root
     password: 123456
   session:
     timeout: 86400
     store-type: redis
   data:
-    mongodb:
-      uri: mongodb://localhost:27017
-      database: logs
+#    mongodb:
+#      uri: mongodb://localhost:27017
+#      database: logs
     redis:
       port: 6379
       host: localhost
