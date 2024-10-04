@@ -6,7 +6,7 @@ package com.fzq.xiaopotato.common;
  */
 public enum ErrorCode {
 
-    SUCCESS(0, "ok", ""),
+    SUCCESS(200, "ok", ""),
     PARAMS_ERROR(40000, "Request parameter error", ""),
     NULL_ERROR(40001, "Request data null", ""),
     NOT_LOGIN(40100, "not login", ""),
