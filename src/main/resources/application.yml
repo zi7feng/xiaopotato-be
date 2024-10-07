@@ -3,7 +3,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/potato?serverTimezone=America/New_York # change the db to real database name
     username: root
-    password: 123456
+    password: rootroot
   session:
     timeout: 86400
     store-type: redis
