@@ -59,6 +59,8 @@ Start the Spring Boot application:
 ```sh
 mvn spring-boot:run
 ```
+The application will start on port `8080` by default.
+
 # API Documentation
 Swagger UI is enabled for this project. After running the application, you can access the API documentation at:
 
