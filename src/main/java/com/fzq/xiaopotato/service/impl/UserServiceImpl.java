@@ -174,6 +174,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         } else {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid Phone.");
         }
+        oldUser.setGender(userUpdateDTO.getGender());
         oldUser.setUserAvatar(userUpdateDTO.getUserAvatar());
         oldUser.setDescription(userUpdateDTO.getDescription());
         return this.baseMapper.updateById(oldUser);
