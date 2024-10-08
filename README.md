@@ -41,6 +41,8 @@ The project also uses Redis for session storage:
     database: 0
 ```
 
+Run `src/main/resources/sql/ddl/schema.sql` to initialize the database.
+
 # Build and Run the Project
 Navigate to the project root directory:
 
