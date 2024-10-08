@@ -6,6 +6,7 @@ import com.fzq.xiaopotato.common.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.UserRegisterDTO;
+import com.fzq.xiaopotato.model.dto.UserUpdateDTO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -39,7 +40,7 @@ public class UserController {
                             schema = @Schema(implementation = BaseResponse.class),
                             examples = @ExampleObject(value = """
                                                 {
-                                                  "code": 0,
+                                                  "code": 200,
                                                   "data": 123,
                                                   "message": "ok",
                                                   "description": ""
@@ -92,7 +93,7 @@ public class UserController {
                             schema = @Schema(implementation = BaseResponse.class),
                             examples = @ExampleObject(value = """
                                                 {
-                                                  "code": 0,
+                                                  "code": 200,
                                                   "data": {
                                                     "id": 123,
                                                     "firstName": "John",
@@ -151,7 +152,7 @@ public class UserController {
                             schema = @Schema(implementation = BaseResponse.class),
                             examples = @ExampleObject(value = """
                                                 {
-                                                  "code": 0,
+                                                  "code": 200,
                                                   "data": true,
                                                   "message": "ok",
                                                   "description": ""
@@ -201,7 +202,7 @@ public class UserController {
                             schema = @Schema(implementation = BaseResponse.class),
                             examples = @ExampleObject(value = """
                                                 {
-                                                  "code": 0,
+                                                  "code": 200,
                                                   "data": {
                                                     "id": 123,
                                                     "firstName": "John",
@@ -238,5 +239,21 @@ public class UserController {
     public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         return ResultUtils.success(user);
+    }
+
+
+    @PostMapping("/update")
+    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateDTO userUpdateDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        int result = userService.updateUser(userUpdateDTO, user, request);
+        if (result > 0) {
+            return ResultUtils.success(true);
+        }
+
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Update fail.");
+
     }
 }

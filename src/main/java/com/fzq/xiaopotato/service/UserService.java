@@ -2,6 +2,7 @@ package com.fzq.xiaopotato.service;
 
 import com.fzq.xiaopotato.model.dto.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.UserRegisterDTO;
+import com.fzq.xiaopotato.model.dto.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fzq.xiaopotato.model.vo.UserVO;
@@ -21,4 +22,10 @@ public interface UserService extends IService<User> {
     Boolean userLogout(HttpServletRequest request);
 
     UserVO getCurrentUser(HttpServletRequest request);
+
+    int updateUser(UserUpdateDTO userUpdateDTO, UserVO userVO, HttpServletRequest request);
+
+    boolean isAdmin(UserVO user);
+
+
 }
