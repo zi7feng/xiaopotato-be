@@ -75,8 +75,11 @@ public class User implements Serializable {
     @TableField(value = "gender")
     private String gender;
 
+    @TableField(value = "description")
+    private String description;
+
     /**
-     * account status（0- normal 1- blocked）
+     * account status（0- normal 1- banned）
      */
     @TableField(value = "status")
     private Integer status;

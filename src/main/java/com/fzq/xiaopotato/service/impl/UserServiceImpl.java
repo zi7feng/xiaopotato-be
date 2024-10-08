@@ -4,10 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.common.PasswordUtils;
+import com.fzq.xiaopotato.common.RegexValidator;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.UserMapper;
 import com.fzq.xiaopotato.model.dto.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.UserRegisterDTO;
+import com.fzq.xiaopotato.model.dto.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.User;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
@@ -17,9 +19,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
 import static com.fzq.xiaopotato.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -62,11 +63,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "The length of the password cannot be less than 8");
         }
 
-        // no special characters
-        String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
-        Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
-
-        if (matcher.find()) {
+        if (RegexValidator.isNotValidAccount(userAccount)) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "The user account cannot contain special characters");
         }
         if (!userPassword.equals(checkPassword)) {
@@ -122,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 4. set login state
         HttpSession session = request.getSession();
         session.setAttribute(USER_LOGIN_STATE, safeUser);
-        session.setMaxInactiveInterval(60 * 60); // expire time: 60 * 60s
+        session.setMaxInactiveInterval(3 * 60 * 60); // expire time: 3 * 60 * 60s
 
         return safeUser;
 
@@ -146,6 +143,51 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user;
     }
 
+    @Override
+    public int updateUser(UserUpdateDTO userUpdateDTO, UserVO currentUser, HttpServletRequest request) {
+        if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long id = userUpdateDTO.getId();
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid ID.");
+        }
+
+        // check authority
+        // 2.1 admin can update any info, user can only update their info
+        if (!isAdmin(currentUser) && !id.equals(currentUser.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH);
+        }
+        User oldUser = this.getById(userUpdateDTO.getId());
+        if (oldUser == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot find user with id: " + userUpdateDTO.getId());
+        }
+
+        if (RegexValidator.isValidEmail(userUpdateDTO.getEmail())) {
+            oldUser.setEmail(userUpdateDTO.getEmail());
+        } else {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid Email.");
+        }
+
+        if (RegexValidator.isValidPhoneNumber(userUpdateDTO.getPhone())) {
+            oldUser.setPhone(userUpdateDTO.getPhone());
+        } else {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid Phone.");
+        }
+        oldUser.setUserAvatar(userUpdateDTO.getUserAvatar());
+        oldUser.setDescription(userUpdateDTO.getDescription());
+        return this.baseMapper.updateById(oldUser);
+    }
+
+    @Override
+    public boolean isAdmin(UserVO user) {
+        if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return user.getUserRole().equals(ADMIN_ROLE);
+    }
+
+
     private UserVO getSafeUser(User user) {
         UserVO safeUser = new UserVO();
         safeUser.setFirstName(user.getFirstName());
@@ -156,6 +198,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safeUser.setUserAvatar(user.getUserAvatar());
         safeUser.setUserRole(user.getUserRole());
         safeUser.setGender(user.getGender());
+        safeUser.setDescription(user.getDescription());
         safeUser.setPhone(user.getPhone());
         safeUser.setStatus(user.getStatus());
         return safeUser;

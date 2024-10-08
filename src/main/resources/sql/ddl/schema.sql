@@ -1,6 +1,7 @@
 CREATE DATABASE IF NOT EXISTS POTATO;
 
 USE POTATO;
+DROP table POTATO.User;
 
 CREATE TABLE IF NOT EXISTS POTATO.User
 (
@@ -14,6 +15,7 @@ CREATE TABLE IF NOT EXISTS POTATO.User
     user_role      VARCHAR(256) DEFAULT 'user'            NOT NULL COMMENT 'User Role: user / admin',
     user_password  VARCHAR(512)                           NULL COMMENT 'User Password',
     gender         VARCHAR(256)                           NULL COMMENT 'User Gender',
+    description    VARCHAR(256)                           NULL COMMENT 'User Description',
     status         TINYINT      DEFAULT 0                 NOT NULL COMMENT 'Account Status (0 - Normal, 1 - Blocked)',
     create_time    DATETIME     DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Create Time',
     update_time    DATETIME     DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update Time',

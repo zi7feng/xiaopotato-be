@@ -41,6 +41,8 @@ public class UserVO implements Serializable {
 
     private String gender;
 
+    private String description;
+
 
 
     /**
@@ -50,7 +52,7 @@ public class UserVO implements Serializable {
 
 
     /**
-     * account status（0- normal 1- blocked）
+     * account status（0- normal 1- banned）
      */
     private Integer status;
 
