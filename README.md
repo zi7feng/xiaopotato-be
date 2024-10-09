@@ -67,3 +67,26 @@ Swagger UI is enabled for this project. After running the application, you can a
 ```bash
 http://localhost:8080/swagger-ui.html
 ```
+
+# Start from scratch
+[Install `MySql` database](https://dev.mysql.com/doc/refman/8.0/en/mysql-installer.html)
+
+Download `IntelliJ IDEA` and register [student account](https://www.jetbrains.com/shop/eform/students)
+
+Open `IntelliJ IDEA` and fetch new project from [`github`](https://github.com/zi7feng/xiaopotato-be.git): https://github.com/zi7feng/xiaopotato-be.git
+![project_from_version_control_capture.png](assets/project_from_version_control_capture.png)
+![xiao_potato_git_url_capture.png](assets/xiao_potato_git_url_capture.png)
+![sql_path_db_icon.png](assets/sql_path_db_icon.png)
+![add_mysql_db_and_refresh.png](assets/add_mysql_db.png)
+![mysql_config_and_test_connection.png](assets/mysql_config.png)
+Open directory and execute `schema.sql`: `src/main/resources/sql/ddl/schema.sql`, if you have any issue about sql execution, your can use terminal to execute the sql line by line.
+MySql login command: `mysql -u [username] -p`
+
+Run the project: ![project_run_and_check_db_data.png](assets/project_run_and_check_db_data.png)
+
+Frontend request url: `http://localhost:8080/[api path]` -> `http://localhost:8080/user/register`
+
+## Update code with git
+Modify code and git[hub] operation ![git_operation.png](assets/git_operation.png)
+
+`git pull` + `git commit` + `github pull request` by GUI
