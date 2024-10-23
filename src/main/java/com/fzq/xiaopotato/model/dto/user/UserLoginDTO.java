@@ -1,4 +1,4 @@
-package com.fzq.xiaopotato.model.dto;
+package com.fzq.xiaopotato.model.dto.user;
 
 import lombok.Data;
 

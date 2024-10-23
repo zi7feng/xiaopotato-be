@@ -35,7 +35,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/swagger-ui/swagger-ui-standalone-preset.js",
             "/*.png",
             "/swagger-ui.html",
-            "/swagger-ui/index.html");
+            "/swagger-ui/index.html"
+//            ,
+//            "/upload.html",
+//            "/post/upload"
+    );
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)

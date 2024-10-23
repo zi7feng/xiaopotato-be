@@ -1,13 +1,12 @@
 package com.fzq.xiaopotato.service;
 
-import com.fzq.xiaopotato.model.dto.UserLoginDTO;
-import com.fzq.xiaopotato.model.dto.UserRegisterDTO;
-import com.fzq.xiaopotato.model.dto.UserUpdateDTO;
+import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
+import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
+import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.stereotype.Service;
 
 /**
 * @author zfeng

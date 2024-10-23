@@ -1,4 +1,4 @@
-package com.fzq.xiaopotato.model.dto;
+package com.fzq.xiaopotato.model.dto.user;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
