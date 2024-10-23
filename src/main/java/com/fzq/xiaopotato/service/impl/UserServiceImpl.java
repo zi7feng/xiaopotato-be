@@ -8,22 +8,20 @@ import com.fzq.xiaopotato.common.PasswordUtils;
 import com.fzq.xiaopotato.common.RegexValidator;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.UserMapper;
-import com.fzq.xiaopotato.model.dto.UserLoginDTO;
-import com.fzq.xiaopotato.model.dto.UserRegisterDTO;
-import com.fzq.xiaopotato.model.dto.UserUpdateDTO;
+import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
+import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
+import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.User;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
-import static com.fzq.xiaopotato.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
 * @author zfeng
