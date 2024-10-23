@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fzq.xiaopotato.mapper.PostMapper">
+
+    <resultMap id="BaseResultMap" type="com.fzq.xiaopotato.model.entity.Post">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="postTitle" column="post_title" jdbcType="VARCHAR"/>
+            <result property="postContent" column="post_content" jdbcType="VARCHAR"/>
+            <result property="postImage" column="post_image" jdbcType="VARCHAR"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,post_title,post_content,
+        post_image,create_time,
+        update_time,is_delete
+    </sql>
+</mapper>
