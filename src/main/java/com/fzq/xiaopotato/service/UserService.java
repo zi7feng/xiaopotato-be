@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 public interface UserService extends IService<User> {
     Long userRegister(UserRegisterDTO userRegisterDTO);
 
-    UserVO userLogin(UserLoginDTO userLoginDTO, HttpServletRequest request);
+    UserVO userLogin(UserLoginDTO userLoginDTO);
 
     Boolean userLogout(HttpServletRequest request);
 
