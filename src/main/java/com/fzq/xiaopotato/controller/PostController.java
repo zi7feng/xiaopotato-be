@@ -6,6 +6,7 @@ import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.common.ResultUtils;
 import com.fzq.xiaopotato.common.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
+import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.entity.Post;
@@ -51,5 +52,13 @@ public class PostController {
         }
         IPage<Post> result = postService.listPostByPage(postQueryDTO, request);
         return ResultUtils.success(result);
+    }
+
+    @GetMapping("/selectById")
+    public BaseResponse<Post> getPostById(IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "id is null");
+        }
+        return ResultUtils.success(postService.selectPostById(idDTO, request));
     }
 }
