@@ -44,6 +44,7 @@
         <slf4j-api.version>2.0.12</slf4j-api.version>
         <jakarta.servlet-api.version>6.0.0</jakarta.servlet-api.version>
         <aspectjrt.version>1.9.1</aspectjrt.version>
+        <jwt.version>0.11.2</jwt.version>
     </properties>
     <dependencies>
         <dependency>
@@ -184,6 +185,23 @@
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
+
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-api</artifactId>
+            <version>${jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-impl</artifactId>
+            <version>${jwt.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt-jackson</artifactId>
+            <version>${jwt.version}</version>
+        </dependency>
+
 
 
     </dependencies>

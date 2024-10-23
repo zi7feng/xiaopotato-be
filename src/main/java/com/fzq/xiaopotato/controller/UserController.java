@@ -2,6 +2,7 @@ package com.fzq.xiaopotato.controller;
 
 import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.common.JwtUtils;
 import com.fzq.xiaopotato.common.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.UserLoginDTO;
@@ -15,10 +16,14 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @RestController
@@ -28,6 +33,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private JwtUtils jwtUtils;
     /**
      * User register
      * @param userRegisterDTO user register request
@@ -86,63 +94,19 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
-    @Operation(summary = "Login a user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully logged in",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                                                {
-                                                  "code": 200,
-                                                  "data": {
-                                                    "id": 123,
-                                                    "firstName": "John",
-                                                    "lastName": "Doe",
-                                                    "email": "john.doe@example.com",
-                                                    "userAccount": "johndoe"
-                                                  },
-                                                  "message": "ok",
-                                                  "description": ""
-                                                }
-                                                """))),
-            @ApiResponse(responseCode = "40000", description = "Request parameter error",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                                                {
-                                                  "code": 40000,
-                                                  "data": null,
-                                                  "message": "Request parameter error",
-                                                  "description": ""
-                                                }
-                                                """))),
-            @ApiResponse(responseCode = "40100", description = "Not logged in",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                                                {
-                                                  "code": 40100,
-                                                  "data": null,
-                                                  "message": "not login",
-                                                  "description": ""
-                                                }
-                                                """))),
-            @ApiResponse(responseCode = "50000", description = "System error",
-                    content = @Content(schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                                                {
-                                                  "code": 50000,
-                                                  "data": null,
-                                                  "message": "system error",
-                                                  "description": ""
-                                                }
-                                                """)))
-    })
+
     @PostMapping("/login")
-    public BaseResponse<UserVO> userLogin(@RequestBody UserLoginDTO userLoginDTO, HttpServletRequest request) {
+    public BaseResponse<Map<String, Object>> userLogin(@RequestBody UserLoginDTO userLoginDTO) {
         if (userLoginDTO == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR);
         }
-        UserVO user = userService.userLogin(userLoginDTO, request);
-        return ResultUtils.success(user);
+        UserVO user = userService.userLogin(userLoginDTO);
+
+        String token = jwtUtils.generateToken(user);
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", user);
+        return ResultUtils.success(response);
     }
 
     @Operation(summary = "Logout the current user")
@@ -189,6 +153,7 @@ public class UserController {
                                                 }
                                                 """)))
     })
+    @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
         boolean result = userService.userLogout(request);
@@ -236,6 +201,7 @@ public class UserController {
                                                 """)))
     })
     @GetMapping("/current")
+    @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         return ResultUtils.success(user);
@@ -243,6 +209,7 @@ public class UserController {
 
 
     @PostMapping("/update")
+    @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateDTO userUpdateDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         if (user == null) {

@@ -3,6 +3,7 @@ package com.fzq.xiaopotato.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.common.JwtUtils;
 import com.fzq.xiaopotato.common.PasswordUtils;
 import com.fzq.xiaopotato.common.RegexValidator;
 import com.fzq.xiaopotato.exception.BusinessException;
@@ -13,6 +14,7 @@ import com.fzq.xiaopotato.model.dto.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.User;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.apache.commons.lang3.StringUtils;
@@ -37,6 +39,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private JwtUtils jwtUtils;
 
 
     @Override
@@ -99,7 +104,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public UserVO userLogin(UserLoginDTO userLoginDTO, HttpServletRequest request) {
+    public UserVO userLogin(UserLoginDTO userLoginDTO) {
         String userAccount = userLoginDTO.getUserAccount();
         String userPassword = userLoginDTO.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
@@ -115,38 +120,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Wrong account or password.");
         }
-        UserVO safeUser = getSafeUser(user);
-        // 4. set login state
-        HttpSession session = request.getSession();
-        session.setAttribute(USER_LOGIN_STATE, safeUser);
-        session.setMaxInactiveInterval(3 * 60 * 60); // expire time: 3 * 60 * 60s
 
-        return safeUser;
+        return getSafeUser(user);
 
     }
 
     @Override
     public Boolean userLogout(HttpServletRequest request) {
-        if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        UserVO currentUser = getCurrentUser(request);
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not logged in.");
         }
-        request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;
     }
 
     @Override
     public UserVO getCurrentUser(HttpServletRequest request) {
-        UserVO user = (UserVO) request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (user == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        String token = request.getHeader("Authorization");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7); // 去掉 Bearer 前缀
+            Claims claims = jwtUtils.getClaimsFromToken(token);
+            Long userId = claims.get("id", Long.class);
+            User user = userMapper.selectById(userId);
+            if (user != null) {
+                return getSafeUser(user);
+            }
         }
-        return user;
+        return null;
     }
 
     @Override
     public int updateUser(UserUpdateDTO userUpdateDTO, UserVO currentUser, HttpServletRequest request) {
-        if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        if (getCurrentUser(request) == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not logged in.");
         }
         Long id = userUpdateDTO.getId();
         if (id <= 0) {
