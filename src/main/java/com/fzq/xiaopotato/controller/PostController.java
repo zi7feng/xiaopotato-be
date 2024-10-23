@@ -1,18 +1,18 @@
 package com.fzq.xiaopotato.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.common.ResultUtils;
 import com.fzq.xiaopotato.common.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
+import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
+import com.fzq.xiaopotato.model.entity.Post;
 import com.fzq.xiaopotato.service.PostService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -38,5 +38,18 @@ public class PostController {
             throw new BusinessException(ErrorCode.NULL_ERROR, "Post info is null");
         }
         return ResultUtils.success(postService.postCreate(postCreateDTO, request));
+    }
+
+    @GetMapping("/selectByPage")
+    public BaseResponse<IPage<Post>> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
+        if (postQueryDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Null query dto.");
+        }
+        if (postQueryDTO.getCurrentPage() <= 0 || postQueryDTO.getPageSize() <= 0) {
+            postQueryDTO.setCurrentPage(1);
+            postQueryDTO.setPageSize(10);
+        }
+        IPage<Post> result = postService.listPostByPage(postQueryDTO, request);
+        return ResultUtils.success(result);
     }
 }
