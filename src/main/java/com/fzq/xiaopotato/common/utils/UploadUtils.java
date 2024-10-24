@@ -1,4 +1,4 @@
-package com.fzq.xiaopotato.common;
+package com.fzq.xiaopotato.common.utils;
 
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;

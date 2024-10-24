@@ -3,12 +3,20 @@ package com.fzq.xiaopotato.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.*;
+import com.fzq.xiaopotato.common.utils.JwtUtils;
+import com.fzq.xiaopotato.common.utils.PasswordUtils;
+import com.fzq.xiaopotato.common.utils.TagUtils;
+import com.fzq.xiaopotato.common.utils.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
+import com.fzq.xiaopotato.mapper.TagMapper;
 import com.fzq.xiaopotato.mapper.UserMapper;
+import com.fzq.xiaopotato.mapper.UsertagMapper;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
+import com.fzq.xiaopotato.model.entity.Tag;
 import com.fzq.xiaopotato.model.entity.User;
+import com.fzq.xiaopotato.model.entity.Usertag;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -17,6 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+
+import java.util.List;
 
 import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
 
@@ -37,6 +47,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Autowired
     private JwtUtils jwtUtils;
+    @Autowired
+    private UsertagMapper usertagMapper;
+
+    @Autowired
+    private TagMapper tagMapper;
 
 
     @Override
@@ -183,6 +198,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         oldUser.setGender(userUpdateDTO.getGender());
         oldUser.setUserAvatar(userUpdateDTO.getUserAvatar());
         oldUser.setDescription(userUpdateDTO.getDescription());
+
+        usertagMapper.delete(new QueryWrapper<Usertag>().eq("user_id", oldUser.getId()));
+        List<String> newTags = TagUtils.extractTags(userUpdateDTO.getDescription());
+        for (String tagContent : newTags) {
+            Tag tag = tagMapper.selectOne(new QueryWrapper<Tag>().eq("content", tagContent));
+            Long tagId;
+            if (tag == null) {
+                Tag newTag = new Tag();
+                newTag.setContent(tagContent);
+                tagMapper.insert(newTag);
+                tagId = newTag.getId();
+            } else {
+                tagId = tag.getId();
+            }
+            Usertag userTag = new Usertag();
+            userTag.setUserId(oldUser.getId());
+            userTag.setTagId(tagId);
+            usertagMapper.insert(userTag);
+        }
+
         return this.baseMapper.updateById(oldUser);
     }
 

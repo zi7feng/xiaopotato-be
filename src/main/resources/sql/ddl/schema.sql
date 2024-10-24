@@ -48,3 +48,35 @@ CREATE TABLE IF NOT EXISTS POTATO.UserPost
     CONSTRAINT fk_post FOREIGN KEY (post_id) REFERENCES POTATO.Post(id) ON DELETE CASCADE ON UPDATE CASCADE
 )
     COMMENT 'User-Post Relationship Table';
+
+CREATE TABLE IF NOT EXISTS POTATO.Tag
+(
+    id             BIGINT AUTO_INCREMENT COMMENT 'Unique identifier for the tag' PRIMARY KEY,
+    content        VARCHAR(256) NOT NULL COMMENT 'Content of the tag, typically a keyword or label',
+    create_time    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the tag was created',
+    update_time    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Timestamp when the tag was last updated',
+    is_delete      TINYINT DEFAULT 0 NOT NULL COMMENT 'Indicates if the tag has been deleted (0 - Not deleted, 1 - Deleted)'
+)
+    COMMENT 'Tag Table: stores tags or keywords associated with posts or other entities';
+
+CREATE TABLE IF NOT EXISTS POTATO.Posttag
+(
+    post_id BIGINT NOT NULL COMMENT 'Post ID',
+    tag_id BIGINT NOT NULL COMMENT 'Tag ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Create Time',
+    PRIMARY KEY (post_id, tag_id),
+    CONSTRAINT fk_post_posttag FOREIGN KEY (post_id) REFERENCES POTATO.Post(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_tag_posttag FOREIGN KEY (tag_id) REFERENCES POTATO.Tag(id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+    COMMENT 'Post-Tag Relationship Table: stores the many-to-many relationship between posts and tags';
+
+CREATE TABLE IF NOT EXISTS POTATO.Usertag
+(
+    user_id BIGINT NOT NULL COMMENT 'User ID',
+    tag_id BIGINT NOT NULL COMMENT 'Tag ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Create Time',
+    PRIMARY KEY (user_id, tag_id),
+    CONSTRAINT fk_user_usertag FOREIGN KEY (user_id) REFERENCES POTATO.User(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_tag_usertag FOREIGN KEY (tag_id) REFERENCES POTATO.Tag(id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+    COMMENT 'User-Tag Relationship Table: stores the relationship between users and their custom tags';

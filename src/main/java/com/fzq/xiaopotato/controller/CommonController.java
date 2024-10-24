@@ -2,8 +2,8 @@ package com.fzq.xiaopotato.controller;
 
 import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
-import com.fzq.xiaopotato.common.ResultUtils;
-import com.fzq.xiaopotato.common.UploadUtils;
+import com.fzq.xiaopotato.common.utils.ResultUtils;
+import com.fzq.xiaopotato.common.utils.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

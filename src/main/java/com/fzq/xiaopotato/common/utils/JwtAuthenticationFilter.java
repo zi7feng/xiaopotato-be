@@ -1,4 +1,4 @@
-package com.fzq.xiaopotato.common;
+package com.fzq.xiaopotato.common.utils;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
