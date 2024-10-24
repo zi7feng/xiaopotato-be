@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
+import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,5 +21,7 @@ public interface PostService extends IService<Post> {
     IPage<Post> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request);
 
     Post selectPostById(IdDTO idDTO, HttpServletRequest request);
+
+    Boolean updatePostById(PostUpdateDTO postUpdateDTO, HttpServletRequest request);
 
 }

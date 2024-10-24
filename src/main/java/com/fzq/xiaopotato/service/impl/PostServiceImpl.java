@@ -5,11 +5,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.common.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.UserPostMapper;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
+import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
 import com.fzq.xiaopotato.model.entity.UserPost;
 import com.fzq.xiaopotato.model.vo.UserVO;
@@ -44,7 +46,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
         UserVO currentUser = userService.getCurrentUser(request);
         if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not logged in.");
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Post post = new Post();
         post.setPostTitle(postCreateDTO.getPostTitle());
@@ -65,7 +67,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Override
     public IPage<Post> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         if (userService.getCurrentUser(request) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not login.");
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Page<Post> page = new Page<>(postQueryDTO.getCurrentPage(), postQueryDTO.getPageSize());
         QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
@@ -88,7 +90,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Override
     public Post selectPostById(IdDTO idDTO, HttpServletRequest request) {
         if (userService.getCurrentUser(request) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not logged in.");
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Long postId = idDTO.getId();
         if (postId == null) {
@@ -100,6 +102,42 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Post not found or deleted.");
         }
         return post;
+    }
+
+    @Override
+    public Boolean updatePostById(PostUpdateDTO postUpdateDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+
+        // check if the user is the creator
+        Long userId = user.getId();
+        Long postId = postUpdateDTO.getId();
+
+        UserPost userPost = userPostMapper.selectOne(
+                new QueryWrapper<UserPost>().eq("user_id", userId).eq("post_id", postId)
+        );
+        if (userPost == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "Not the owner of the post.");
+        }
+
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Post not found");
+        }
+
+        // delete old picture
+        if (post.getPostImage() != null) {
+            String oldImageUrl = post.getPostImage();
+            UploadUtils.deleteImage(oldImageUrl);
+        }
+
+        post.setPostTitle(postUpdateDTO.getPostTitle());
+        post.setPostContent(postUpdateDTO.getPostContent());
+        post.setPostImage(postUpdateDTO.getPostImage());
+        int result = postMapper.updateById(post);
+        return result > 0;
     }
 }
 

@@ -12,6 +12,11 @@ public class UploadUtils {
     // domain
     public static final String ALI_DOMAIN = "https://fzqqq-test.oss-us-east-1.aliyuncs.com/";
 
+    public static final String END_POINT = "http://oss-us-east-1.aliyuncs.com";
+
+    public static final String ACCESS_KEY_ID = "LTAI5t9j3DW7ZSvuBEirhw5V";
+    public static final String ACCESS_KEY_SECRET = "pVhaGprnUdGPCjN8O4VYzJHkMw70VO";
+    public static final String BUCKET_NAME = "fzqqq-test";
     public static String uploadImage(MultipartFile file) throws IOException {
         // file name generator
         String originalFileName = file.getOriginalFilename();
@@ -19,21 +24,23 @@ public class UploadUtils {
         String uuid = UUID.randomUUID().toString().replace("-", "");
         String fileName = uuid + ext;
 
-        // end point
-        String endPoint = "http://oss-us-east-1.aliyuncs.com";
-
-        String accessKeyId = "LTAI5t9j3DW7ZSvuBEirhw5V";
-        String accessKeySecret = "pVhaGprnUdGPCjN8O4VYzJHkMw70VO";
-
         // OSS client object
-        OSS ossCilent = new OSSClientBuilder().build(endPoint, accessKeyId, accessKeySecret);
+        OSS ossCilent = new OSSClientBuilder().build(END_POINT, ACCESS_KEY_ID, ACCESS_KEY_SECRET);
         ossCilent.putObject(
-                "fzqqq-test",
+                BUCKET_NAME,
                 fileName,
                 file.getInputStream()
         );
         ossCilent.shutdown();
         return ALI_DOMAIN + fileName;
+    }
+
+    // delete image
+    public static void deleteImage(String imageUrl) {
+        String fileName = imageUrl.replace(ALI_DOMAIN, "");
+        OSS ossCilent = new OSSClientBuilder().build(END_POINT, ACCESS_KEY_ID, ACCESS_KEY_SECRET);
+        ossCilent.deleteObject(BUCKET_NAME, fileName);
+        ossCilent.shutdown();
     }
 
 

@@ -9,8 +9,11 @@ import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
+import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
+import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.PostService;
+import com.fzq.xiaopotato.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +27,6 @@ public class PostController {
 
     @Autowired
     private PostService postService;
-
-    @PostMapping("/upload")
-    public BaseResponse<String> upload(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new BusinessException(ErrorCode.NULL_ERROR, "File is null.");
-        }
-        return ResultUtils.success(UploadUtils.uploadImage(file));
-    }
 
     @PostMapping("/create")
     public BaseResponse<Long> createPost(@RequestBody PostCreateDTO postCreateDTO, HttpServletRequest request) {
@@ -60,5 +55,15 @@ public class PostController {
             throw new BusinessException(ErrorCode.NULL_ERROR, "id is null");
         }
         return ResultUtils.success(postService.selectPostById(idDTO, request));
+    }
+
+    @PostMapping("/update")
+    public BaseResponse<Boolean> updatePostById(@RequestBody PostUpdateDTO postUpdateDTO, HttpServletRequest request) {
+
+        boolean result = postService.updatePostById(postUpdateDTO, request);
+        if (!result) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Update post fail.");
+        }
+        return ResultUtils.success(true);
     }
 }

@@ -223,12 +223,4 @@ public class UserController {
 
     }
 
-
-    @PostMapping("/upload")
-    public BaseResponse<String> upload(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new BusinessException(ErrorCode.NULL_ERROR, "File is null.");
-        }
-        return ResultUtils.success(UploadUtils.uploadImage(file));
-    }
 }
