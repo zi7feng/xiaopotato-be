@@ -36,9 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/*.png",
             "/swagger-ui.html",
             "/swagger-ui/index.html"
-//            ,
-//            "/upload.html",
-//            "/post/upload"
+            ,
+            "/upload.html",
+            "/post/upload"
     );
 
     @Override

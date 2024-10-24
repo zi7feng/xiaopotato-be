@@ -2,10 +2,7 @@ package com.fzq.xiaopotato.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fzq.xiaopotato.common.ErrorCode;
-import com.fzq.xiaopotato.common.JwtUtils;
-import com.fzq.xiaopotato.common.PasswordUtils;
-import com.fzq.xiaopotato.common.RegexValidator;
+import com.fzq.xiaopotato.common.*;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.UserMapper;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
@@ -127,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public Boolean userLogout(HttpServletRequest request) {
         UserVO currentUser = getCurrentUser(request);
         if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not logged in.");
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         return true;
     }
@@ -150,7 +147,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public int updateUser(UserUpdateDTO userUpdateDTO, UserVO currentUser, HttpServletRequest request) {
         if (getCurrentUser(request) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN, "User not logged in.");
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Long id = userUpdateDTO.getId();
         if (id <= 0) {
@@ -177,6 +174,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             oldUser.setPhone(userUpdateDTO.getPhone());
         } else {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid Phone.");
+        }
+
+        if (oldUser.getUserAvatar() != null) {
+            String oldImageUrl = oldUser.getUserAvatar();
+            UploadUtils.deleteImage(oldImageUrl);
         }
         oldUser.setGender(userUpdateDTO.getGender());
         oldUser.setUserAvatar(userUpdateDTO.getUserAvatar());
