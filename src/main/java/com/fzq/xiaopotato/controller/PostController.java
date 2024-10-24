@@ -3,23 +3,17 @@ package com.fzq.xiaopotato.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
-import com.fzq.xiaopotato.common.ResultUtils;
-import com.fzq.xiaopotato.common.UploadUtils;
+import com.fzq.xiaopotato.common.utils.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
-import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.PostService;
-import com.fzq.xiaopotato.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
 
 @RestController
 @RequestMapping("/post")

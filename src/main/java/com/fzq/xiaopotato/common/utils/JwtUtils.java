@@ -1,4 +1,4 @@
-package com.fzq.xiaopotato.common;
+package com.fzq.xiaopotato.common.utils;
 
 import com.fzq.xiaopotato.model.vo.UserVO;
 import io.jsonwebtoken.Claims;

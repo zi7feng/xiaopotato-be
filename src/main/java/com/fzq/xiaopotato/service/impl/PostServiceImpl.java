@@ -4,26 +4,26 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
-import com.fzq.xiaopotato.common.UploadUtils;
+import com.fzq.xiaopotato.common.utils.TagUtils;
+import com.fzq.xiaopotato.common.utils.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
-import com.fzq.xiaopotato.mapper.UserPostMapper;
+import com.fzq.xiaopotato.mapper.*;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
-import com.fzq.xiaopotato.model.entity.Post;
-import com.fzq.xiaopotato.model.entity.UserPost;
+import com.fzq.xiaopotato.model.entity.*;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.PostService;
-import com.fzq.xiaopotato.mapper.PostMapper;
 import com.fzq.xiaopotato.service.UserService;
-import com.fzq.xiaopotato.service.UserPostService;
+import com.fzq.xiaopotato.service.UsertagService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
 * @author zfeng
@@ -43,6 +43,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Autowired
     private UserPostMapper userPostMapper;
 
+    @Autowired
+    private TagMapper tagMapper;
+    @Autowired
+    private PosttagMapper posttagMapper;
+
     @Override
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
         UserVO currentUser = userService.getCurrentUser(request);
@@ -60,6 +65,29 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         userPost.setPostId(post.getId());
 
         userPostMapper.insert(userPost);
+
+        List<String> tags = TagUtils.extractTags(postCreateDTO.getPostContent());
+
+        for (String tagContent : tags) {
+            // check if the tag exists
+            Tag tag = tagMapper.selectOne(new QueryWrapper<Tag>().eq("content", tagContent));
+            Long tagId;
+
+            if (tag == null) {
+                Tag newTag = new Tag();
+                newTag.setContent(tagContent);
+                tagMapper.insert(newTag);
+                tagId = newTag.getId();
+            } else {
+                tagId = tag.getId();
+            }
+
+            // add relationship in Posttag table
+            Posttag posttag = new Posttag();
+            posttag.setPostId(post.getId());
+            posttag.setTagId(tagId);
+            posttagMapper.insert(posttag);
+        }
 
         return post.getId();
 
@@ -129,8 +157,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             throw new BusinessException(ErrorCode.NO_AUTH, "Not the owner of the post.");
         }
 
-
-
         // delete old picture
         if (post.getPostImage() != null) {
             String oldImageUrl = post.getPostImage();
@@ -141,6 +167,33 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         post.setPostContent(postUpdateDTO.getPostContent());
         post.setPostImage(postUpdateDTO.getPostImage());
         int result = postMapper.updateById(post);
+        if (result > 0) {
+            // delete old tag relations
+            posttagMapper.delete(new QueryWrapper<Posttag>().eq("post_id", postId));
+            // get new tags
+            List<String> newTags = TagUtils.extractTags(postUpdateDTO.getPostContent());
+
+            for (String tagContent : newTags) {
+                // check if the tag exists
+                Tag tag = tagMapper.selectOne(new QueryWrapper<Tag>().eq("content", tagContent));
+                Long tagId;
+
+                if (tag == null) {
+                    Tag newTag = new Tag();
+                    newTag.setContent(tagContent);
+                    tagMapper.insert(newTag);
+                    tagId = newTag.getId();
+                } else {
+                    tagId = tag.getId();
+                }
+
+                // add relationship in Posttag table
+                Posttag posttag = new Posttag();
+                posttag.setPostId(post.getId());
+                posttag.setTagId(tagId);
+                posttagMapper.insert(posttag);
+            }
+        }
         return result > 0;
     }
 
@@ -178,6 +231,16 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     }
 
 
+    /**
+    * @author zfeng
+    * @description 针对表【Usertag(User-Tag Relationship Table: stores the relationship between users and their custom tags)】的数据库操作Service实现
+    * @createDate 2024-10-24 15:05:29
+    */
+    @Service
+    public static class UsertagServiceImpl extends ServiceImpl<UsertagMapper, Usertag>
+        implements UsertagService {
+
+    }
 }
 
 

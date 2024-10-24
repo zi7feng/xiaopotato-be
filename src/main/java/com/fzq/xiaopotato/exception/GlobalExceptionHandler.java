@@ -2,7 +2,7 @@ package com.fzq.xiaopotato.exception;
 
 import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
-import com.fzq.xiaopotato.common.ResultUtils;
+import com.fzq.xiaopotato.common.utils.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

@@ -1,4 +1,4 @@
-package com.fzq.xiaopotato.common;
+package com.fzq.xiaopotato.common.utils;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

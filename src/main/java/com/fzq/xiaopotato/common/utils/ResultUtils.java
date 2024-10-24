@@ -1,4 +1,7 @@
-package com.fzq.xiaopotato.common;
+package com.fzq.xiaopotato.common.utils;
+
+import com.fzq.xiaopotato.common.BaseResponse;
+import com.fzq.xiaopotato.common.ErrorCode;
 
 /**
  * return utils
