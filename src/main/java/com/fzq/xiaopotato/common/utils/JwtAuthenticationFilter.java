@@ -38,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             "/swagger-ui/index.html"
             ,
             "/upload.html",
-            "/post/upload"
+            "/common/upload"
     );
 
     @Override
