@@ -66,4 +66,12 @@ public class PostController {
         }
         return ResultUtils.success(true);
     }
+
+    @PostMapping("/delete")
+    public BaseResponse<Boolean> deletePostById(@RequestBody IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "id is null");
+        }
+        return ResultUtils.success(postService.deletePostById(idDTO, request));
+    }
 }

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fzq.xiaopotato.common.BaseResponse;
 import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.common.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
@@ -111,10 +112,16 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
 
-        // check if the user is the creator
+
         Long userId = user.getId();
         Long postId = postUpdateDTO.getId();
+        // check if the post exist
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Post not found");
+        }
 
+        // check if the user is the creator
         UserPost userPost = userPostMapper.selectOne(
                 new QueryWrapper<UserPost>().eq("user_id", userId).eq("post_id", postId)
         );
@@ -122,10 +129,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             throw new BusinessException(ErrorCode.NO_AUTH, "Not the owner of the post.");
         }
 
-        Post post = postMapper.selectById(postId);
-        if (post == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR, "Post not found");
-        }
+
 
         // delete old picture
         if (post.getPostImage() != null) {
@@ -139,6 +143,41 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         int result = postMapper.updateById(post);
         return result > 0;
     }
+
+    @Override
+    public Boolean deletePostById(IdDTO idDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        Long postId = idDTO.getId();
+
+        // check if the post exist
+        Post post = postMapper.selectById(postId);
+        if (post == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Post not found");
+        }
+
+        // check if the user is the creator
+        UserPost userPost = userPostMapper.selectOne(
+                new QueryWrapper<UserPost>().eq("user_id", userId).eq("post_id", postId)
+        );
+        if (userPost == null) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "Not the owner of the post.");
+        }
+
+        // delete file in oss
+        if (post.getPostImage() != null) {
+            String imageUrl = post.getPostImage();
+            UploadUtils.deleteImage(imageUrl);
+        }
+
+        int result = postMapper.deleteById(postId);
+        return result > 0;
+    }
+
+
 }
 
 
