@@ -26,4 +26,7 @@ public interface PostService extends IService<Post> {
 
     Boolean deletePostById(IdDTO idDTO, HttpServletRequest request);
 
+    IPage<Post> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request);
+
+
 }

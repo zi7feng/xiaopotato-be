@@ -263,6 +263,40 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         return result > 0;
     }
 
+    @Override
+    public IPage<Post> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Page<Post> page = new Page<>(postQueryDTO.getCurrentPage(), postQueryDTO.getPageSize());
+        Long userId = user.getId();
+        List<Long> postIds = userPostMapper.selectList(new QueryWrapper<UserPost>().eq("user_id", userId))
+                .stream()
+                .map(UserPost::getPostId)
+                .collect(Collectors.toList());
+        if (postIds.isEmpty()) {
+            // user doesn't have posts, return empty page
+            return new Page<>();
+        }
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", postIds);
+
+        String title = postQueryDTO.getPostTitle();
+        String content = postQueryDTO.getPostContent();
+
+        if (!StringUtils.isEmpty(title)) {
+            queryWrapper.like("post_title", title);
+        }
+        if (!StringUtils.isEmpty(content)) {
+            queryWrapper.like("post_content", content);
+        }
+
+
+        IPage<Post> pageResult = this.page(page, queryWrapper);
+        return pageResult;
+    }
+
 
     /**
     * @author zfeng
