@@ -20,6 +20,10 @@ public class ResultUtils {
         return new BaseResponse<>(200, data, "ok");
     }
 
+    public static <T> BaseResponse<T> success(T data, String description) {
+        return new BaseResponse<>(200, data, "ok", description);
+    }
+
     /**
      * fail
      *

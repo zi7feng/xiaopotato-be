@@ -28,5 +28,8 @@ public interface PostService extends IService<Post> {
 
     IPage<Post> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request);
 
+    Integer getLikedCount(IdDTO idDTO, HttpServletRequest request);
+
+    Integer getSavedCount(IdDTO idDTO, HttpServletRequest request);
 
 }

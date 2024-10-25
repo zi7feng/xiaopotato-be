@@ -21,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.transform.Result;
+
 @RestController
 @RequestMapping("/post")
 public class PostController {
@@ -196,5 +198,49 @@ public class PostController {
         }
         IPage<Post> result = postService.listPostByUserId(postQueryDTO, request);
         return ResultUtils.success(result);
+    }
+
+    @Operation(summary = "Get Like Count for a Post by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved like count for the post",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(value = """
+                        {
+                          "code": 200,
+                          "data": 15,
+                          "message": "ok",
+                          "description": "Number of likes for the specified post."
+                        }
+                """)))
+    })
+    @GetMapping("/getLikedCount")
+    public BaseResponse<Integer> getLikedCount(IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "post id is null");
+        }
+        return ResultUtils.success(postService.getLikedCount(idDTO, request));
+    }
+
+    @Operation(summary = "Get Save Count for a Post by ID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved save count for the post",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = BaseResponse.class),
+                            examples = @ExampleObject(value = """
+                        {
+                          "code": 200,
+                          "data": 10,
+                          "message": "ok",
+                          "description": "Number of times the specified post has been saved."
+                        }
+                """)))
+    })
+    @GetMapping("/getSavedCount")
+    public BaseResponse<Integer> getSavedCount(IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "post id is null");
+        }
+        return ResultUtils.success(postService.getSavedCount(idDTO, request));
     }
 }

@@ -54,6 +54,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    @Autowired
+    private LikesMapper likesMapper;
+
+    @Autowired
+    private SavesMapper savesMapper;
+
     @Override
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
         UserVO currentUser = userService.getCurrentUser(request);
@@ -130,7 +136,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     boolean post1Recommended = recommendedPostIds.contains(post1.getId());
                     boolean post2Recommended = recommendedPostIds.contains(post2.getId());
 
-                    // 推荐帖子优先排列
+                    // sorted by whether is recommended
                     if (post1Recommended && !post2Recommended) return -1;
                     if (!post1Recommended && post2Recommended) return 1;
                     return 0;
@@ -297,17 +303,26 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         return pageResult;
     }
 
-
-    /**
-    * @author zfeng
-    * @description 针对表【Usertag(User-Tag Relationship Table: stores the relationship between users and their custom tags)】的数据库操作Service实现
-    * @createDate 2024-10-24 15:05:29
-    */
-    @Service
-    public static class UsertagServiceImpl extends ServiceImpl<UsertagMapper, Usertag>
-        implements UsertagService {
-
+    @Override
+    public Integer getLikedCount(IdDTO idDTO, HttpServletRequest request) {
+        if (userService.getCurrentUser(request) == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long postId = idDTO.getId();
+        Long count = likesMapper.selectCount(new QueryWrapper<Likes>().eq("post_id", postId));
+        return count != null ? count.intValue() : 0;
     }
+
+    @Override
+    public Integer getSavedCount(IdDTO idDTO, HttpServletRequest request) {
+        if (userService.getCurrentUser(request) == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long postId = idDTO.getId();
+        Long count = savesMapper.selectCount(new QueryWrapper<Saves>().eq("post_id", postId));
+        return count != null ? count.intValue() : 0;
+    }
+
 }
 
 
