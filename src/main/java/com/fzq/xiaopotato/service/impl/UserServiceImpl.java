@@ -3,17 +3,16 @@ package com.fzq.xiaopotato.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.*;
-import com.fzq.xiaopotato.common.utils.JwtUtils;
-import com.fzq.xiaopotato.common.utils.PasswordUtils;
-import com.fzq.xiaopotato.common.utils.TagUtils;
-import com.fzq.xiaopotato.common.utils.UploadUtils;
+import com.fzq.xiaopotato.common.utils.*;
 import com.fzq.xiaopotato.exception.BusinessException;
+import com.fzq.xiaopotato.mapper.PosttagMapper;
 import com.fzq.xiaopotato.mapper.TagMapper;
 import com.fzq.xiaopotato.mapper.UserMapper;
 import com.fzq.xiaopotato.mapper.UsertagMapper;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
+import com.fzq.xiaopotato.model.entity.Posttag;
 import com.fzq.xiaopotato.model.entity.Tag;
 import com.fzq.xiaopotato.model.entity.User;
 import com.fzq.xiaopotato.model.entity.Usertag;
@@ -27,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
 
@@ -52,6 +52,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private PosttagMapper posttagMapper;
+    @Autowired
+    private TagRecommendationUtils tagRecommendationUtils;
 
 
     @Override
@@ -216,13 +220,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             } else {
                 tagId = tag.getId();
             }
-            Usertag userTag = new Usertag();
-            userTag.setUserId(oldUser.getId());
-            userTag.setTagId(tagId);
-            usertagMapper.insert(userTag);
+            Usertag usertag = new Usertag();
+            usertag.setUserId(oldUser.getId());
+            usertag.setTagId(tagId);
+            usertagMapper.insert(usertag);
         }
 
-        return this.baseMapper.updateById(oldUser);
+        int updateResult =  this.baseMapper.updateById(oldUser);
+
+        if (updateResult > 0) {
+            List<Long> allPostIds = posttagMapper.selectList(new QueryWrapper<Posttag>().select("DISTINCT post_id"))
+                    .stream()
+                    .map(Posttag::getPostId)
+                    .collect(Collectors.toList());
+
+            // 生成并缓存推荐帖子列表
+            List<Long> recommendedPosts = tagRecommendationUtils.generateRecommendedPosts(id, allPostIds, usertagMapper, posttagMapper, tagMapper);
+            tagRecommendationUtils.cacheRecommendedPosts(id, recommendedPosts);
+        }
+
+        return updateResult;
     }
 
     @Override

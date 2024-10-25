@@ -21,9 +21,11 @@ import com.fzq.xiaopotato.service.UsertagService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author zfeng
@@ -45,8 +47,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Autowired
     private TagMapper tagMapper;
+
     @Autowired
     private PosttagMapper posttagMapper;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
@@ -95,7 +101,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Override
     public IPage<Post> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
-        if (userService.getCurrentUser(request) == null) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Page<Post> page = new Page<>(postQueryDTO.getCurrentPage(), postQueryDTO.getPageSize());
@@ -110,9 +117,35 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (!StringUtils.isEmpty(content)) {
             queryWrapper.like("post_content", content);
         }
+        List<Post> allPosts = this.list(queryWrapper);
+        // get recommended post list from redis
+        String redisKey = "user_recommendation:" + user.getId();
+        List<Object> recommendedPostIdsObj = redisTemplate.opsForList().range(redisKey, 0, -1);
 
+        List<Long> recommendedPostIds = recommendedPostIdsObj.stream()
+                .flatMap(obj -> ((List<Long>) obj).stream())
+                .collect(Collectors.toList());
+        List<Post> sortedPosts = allPosts.stream()
+                .sorted((post1, post2) -> {
+                    boolean post1Recommended = recommendedPostIds.contains(post1.getId());
+                    boolean post2Recommended = recommendedPostIds.contains(post2.getId());
 
-        IPage<Post> pageResult = this.page(page, queryWrapper);
+                    // 推荐帖子优先排列
+                    if (post1Recommended && !post2Recommended) return -1;
+                    if (!post1Recommended && post2Recommended) return 1;
+                    return 0;
+                })
+                .collect(Collectors.toList());
+
+        int currentPage = postQueryDTO.getCurrentPage();
+        int pageSize = postQueryDTO.getPageSize();
+        int start = (currentPage - 1) * pageSize;
+        int end = Math.min(start + pageSize, sortedPosts.size());
+        List<Post> paginatedPosts = sortedPosts.subList(start, end);
+
+        Page<Post> pageResult = new Page<>(currentPage, pageSize, sortedPosts.size());
+        pageResult.setRecords(paginatedPosts);
+
         return pageResult;
     }
 
