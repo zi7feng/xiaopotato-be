@@ -145,6 +145,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
+        // get old token, put it into the blacklist
+        String oldToken = request.getHeader("Authorization").substring(7);
+        jwtUtils.addToBlacklist(oldToken);
         return true;
     }
 
