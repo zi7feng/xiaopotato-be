@@ -21,11 +21,14 @@ import com.fzq.xiaopotato.service.UserService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
@@ -56,6 +59,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private PosttagMapper posttagMapper;
     @Autowired
     private TagRecommendationUtils tagRecommendationUtils;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
     @Override
@@ -232,14 +237,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         int updateResult =  this.baseMapper.updateById(oldUser);
 
         if (updateResult > 0) {
+            logger.info("Starting recommendation generation on main thread: {}", Thread.currentThread().getId());
+
             List<Long> allPostIds = posttagMapper.selectList(new QueryWrapper<Posttag>().select("DISTINCT post_id"))
                     .stream()
                     .map(Posttag::getPostId)
                     .collect(Collectors.toList());
 
-            // 生成并缓存推荐帖子列表
-            List<Long> recommendedPosts = tagRecommendationUtils.generateRecommendedPosts(id, allPostIds, usertagMapper, posttagMapper, tagMapper);
-            tagRecommendationUtils.cacheRecommendedPosts(id, recommendedPosts);
+            // async generate and cache recommendation list
+            CompletableFuture<List<Long>> recommendedPostsFuture = tagRecommendationUtils.generateRecommendedPosts(id, allPostIds, usertagMapper, posttagMapper, tagMapper);
+            recommendedPostsFuture.thenAccept(recommendedPosts ->
+                    tagRecommendationUtils.cacheRecommendedPosts(id, recommendedPosts)
+            );
         }
 
         return updateResult;

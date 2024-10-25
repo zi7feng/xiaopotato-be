@@ -7,17 +7,24 @@ import com.fzq.xiaopotato.mapper.UsertagMapper;
 import com.fzq.xiaopotato.model.entity.Posttag;
 import com.fzq.xiaopotato.model.entity.Tag;
 import com.fzq.xiaopotato.model.entity.Usertag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
 public class TagRecommendationUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(TagRecommendationUtils.class);
+
 
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -47,17 +54,20 @@ public class TagRecommendationUtils {
         return dp[s1.length()][s2.length()];
     }
 
-    public List<Long> generateRecommendedPosts(Long userId, List<Long> postIds,
-                                                      UsertagMapper usertagMapper,
-                                                      PosttagMapper posttagMapper,
-                                                      TagMapper tagMapper) {
-        // 获取用户的所有 tagId
+    @Async
+    public CompletableFuture<List<Long>> generateRecommendedPosts(Long userId, List<Long> postIds,
+                                                                  UsertagMapper usertagMapper,
+                                                                  PosttagMapper posttagMapper,
+                                                                  TagMapper tagMapper) {
+        logger.info("Generating recommended posts on thread: {}", Thread.currentThread().getId());
+
+        // get user's all tagIds
         List<Long> userTagIds = usertagMapper.selectList(
                         new QueryWrapper<Usertag>().eq("user_id", userId))
                 .stream()
                 .map(Usertag::getTagId)
                 .collect(Collectors.toList());
-        // 从 Tag 表中获取 usertagIds 对应的内容
+        // get content from the tag table by tagId
         List<String> userTags = tagMapper.selectList(
                         new QueryWrapper<Tag>().in("id", userTagIds))
                 .stream()
@@ -67,19 +77,19 @@ public class TagRecommendationUtils {
         Map<Long, Integer> postScores = new HashMap<>();
 
         for (Long postId : postIds) {
-            // 获取当前帖子对应的所有 tagId
+            // get post's all tagId
             List<Long> postTagIds = posttagMapper.selectList(
                             new QueryWrapper<Posttag>().eq("post_id", postId))
                     .stream()
                     .map(Posttag::getTagId)
                     .collect(Collectors.toList());
-            // 从 Tag 表中获取 posttagIds 对应的内容
+            // get content from the tag table by tagId
             List<String> postTags = tagMapper.selectList(
                             new QueryWrapper<Tag>().in("id", postTagIds))
                     .stream()
                     .map(Tag::getContent)
                     .collect(Collectors.toList());
-            // 计算当前帖子与用户标签的相似度得分
+            // calculate the similar rate score for each user
             int score = 0;
             for (String userTag : userTags) {
                 for (String postTag : postTags) {
@@ -90,7 +100,7 @@ public class TagRecommendationUtils {
             postScores.put(postId, score);
         }
 
-        // 按得分升序排序并取前 20 个帖子
+        // get the top 20 with the highest score
         List<Long> recommendedPostIds =  postScores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .limit(20)
@@ -98,14 +108,17 @@ public class TagRecommendationUtils {
                 .collect(Collectors.toList());
 
         cacheRecommendedPosts(userId, recommendedPostIds);
-        return recommendedPostIds;
+        return CompletableFuture.completedFuture(recommendedPostIds);
 
     }
 
-    public void cacheRecommendedPosts(Long userId, List<Long> recommendedPostIds) {
+    @Async
+    public CompletableFuture<Void> cacheRecommendedPosts(Long userId, List<Long> recommendedPostIds) {
+        logger.info("Caching recommended posts on thread: {}", Thread.currentThread().getId());
         String redisKey = "user_recommendation:" + userId;
         redisTemplate.opsForList().rightPushAll(redisKey, recommendedPostIds);
-        redisTemplate.expire(redisKey, 24, TimeUnit.HOURS);  // 设置缓存过期时间为24小时
+        redisTemplate.expire(redisKey, 24, TimeUnit.HOURS);  // expire 24 hours (schedule a task runs every 24 hours)
+        return CompletableFuture.completedFuture(null);
     }
 
 
