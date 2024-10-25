@@ -201,9 +201,21 @@ public class UserController {
     })
     @GetMapping("/current")
     @SecurityRequirement(name = "bearerAuth")
-    public BaseResponse<UserVO> getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<Map<String, Object>> getCurrentUser(HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
-        return ResultUtils.success(user);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        // get old token, put it into the blacklist
+        String oldToken = request.getHeader("Authorization").substring(7);
+        jwtUtils.addToBlacklist(oldToken);
+
+        String newToken = jwtUtils.generateToken(user);
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", newToken);
+        response.put("user", user);
+
+        return ResultUtils.success(response);
     }
 
 
@@ -214,6 +226,7 @@ public class UserController {
         if (user == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
+
         int result = userService.updateUser(userUpdateDTO, user, request);
         if (result > 0) {
             return ResultUtils.success(true);

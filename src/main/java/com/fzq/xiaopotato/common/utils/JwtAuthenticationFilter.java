@@ -17,7 +17,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private JwtUtils jwtUtils;
 
-    // 定义不需要 JWT 认证的路径
+    // Paths that do not require JWT authentication
     private static final List<String> EXCLUDED_PATHS = List.of("/user/current","/user/register", "/user/login", "/v3/api-docs/**",         // swagger
             "/webjars/**",            // swagger-ui webjars
             "/swagger-resources/**",  // swagger-ui resources
@@ -44,35 +44,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String path = request.getRequestURI();  // 获取请求路径
+        String path = request.getRequestURI();  // Get the request path
 
-        // 如果请求路径在不需要认证的路径中，直接放行
+        // If the request path is excluded from authentication, allow the request to pass
         if (EXCLUDED_PATHS.contains(path)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // 获取请求头中的 JWT
+        // get JWT from the Authorization header
         String token = request.getHeader("Authorization");
 
-        // 验证 JWT
+        // validate JWT
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // 去掉 Bearer 前缀
+            token = token.substring(7); // remove Bearer prefix
             try {
-                Claims claims = jwtUtils.getClaimsFromToken(token);
-                // 这里可以将用户信息设置到上下文中，例如 SecurityContextHolder
+                Claims claims = jwtUtils.getClaimsFromToken(token); // check the jwt is valid
+
+                // check if the token is expired
+                if (jwtUtils.isTokenExpired(token)) {
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+                if (jwtUtils.isTokenBlacklisted(token)) {
+                    // if in the blacklist, return 401
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
             } catch (Exception e) {
-                // JWT无效或过期，返回 401 状态码
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
         } else {
-            // 如果没有提供 JWT 或者格式错误，返回 401 状态码
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        // 放行请求
         filterChain.doFilter(request, response);
     }
 }
