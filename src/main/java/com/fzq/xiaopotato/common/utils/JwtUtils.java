@@ -4,15 +4,20 @@ import com.fzq.xiaopotato.model.vo.UserVO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class JwtUtils {
     private static final String SECRET_KEY = "potatopotatopotatopotatopotatopotatopotatopotato";
 
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 3;
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 1; // 1 hour
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     // generate jwt
     public String generateToken(UserVO user) {
@@ -38,4 +43,17 @@ public class JwtUtils {
         return claims.getExpiration().before(new Date());
     }
 
+    // add old token to the blacklist (set expiry to the remaining token validity)
+    public void addToBlacklist(String token) {
+        long expiration = getClaimsFromToken(token).getExpiration().getTime() - System.currentTimeMillis();
+        if (expiration > 0) {
+            String tokenKey = "token:blacklist:" + token;
+            redisTemplate.opsForValue().set(tokenKey, true, expiration, TimeUnit.MILLISECONDS);
+        }
+    }
+
+    public boolean isTokenBlacklisted(String token) {
+        String tokenKey = "token:blacklist:" + token;
+        return Boolean.TRUE.equals(redisTemplate.opsForValue().get(tokenKey));
+    }
 }

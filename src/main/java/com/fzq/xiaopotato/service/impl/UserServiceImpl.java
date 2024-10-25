@@ -148,7 +148,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public UserVO getCurrentUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7); // 去掉 Bearer 前缀
+            token = token.substring(7); // remove Bearer prefix
+            if (jwtUtils.isTokenBlacklisted(token)) {
+                // Token in blacklist
+                throw new BusinessException(ErrorCode.NO_AUTH, "Token has been invalidated.");
+            }
             Claims claims = jwtUtils.getClaimsFromToken(token);
             Long userId = claims.get("id", Long.class);
             User user = userMapper.selectById(userId);
