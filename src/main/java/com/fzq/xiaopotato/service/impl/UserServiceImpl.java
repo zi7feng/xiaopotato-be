@@ -1,22 +1,21 @@
 package com.fzq.xiaopotato.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.*;
 import com.fzq.xiaopotato.common.utils.*;
 import com.fzq.xiaopotato.exception.BusinessException;
-import com.fzq.xiaopotato.mapper.PosttagMapper;
-import com.fzq.xiaopotato.mapper.TagMapper;
-import com.fzq.xiaopotato.mapper.UserMapper;
-import com.fzq.xiaopotato.mapper.UsertagMapper;
+import com.fzq.xiaopotato.mapper.*;
+import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
-import com.fzq.xiaopotato.model.entity.Posttag;
-import com.fzq.xiaopotato.model.entity.Tag;
-import com.fzq.xiaopotato.model.entity.User;
-import com.fzq.xiaopotato.model.entity.Usertag;
+import com.fzq.xiaopotato.model.entity.*;
 import com.fzq.xiaopotato.model.vo.UserVO;
+import com.fzq.xiaopotato.service.LikesService;
+import com.fzq.xiaopotato.service.SavesService;
 import com.fzq.xiaopotato.service.UserService;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
@@ -59,6 +58,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private PosttagMapper posttagMapper;
     @Autowired
     private TagRecommendationUtils tagRecommendationUtils;
+
+    @Autowired
+    private LikesMapper likesMapper;
+
+    @Autowired
+    private SavesMapper savesMapper;
+
+    @Autowired
+    private PostMapper postMapper;
+
+
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -260,6 +270,50 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
         return user.getUserRole().equals(ADMIN_ROLE);
+    }
+
+    @Override
+    public IPage<Post> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        List<Long> likedPostIds = likesMapper.selectList(new QueryWrapper<Likes>().eq("user_id", userId))
+                .stream()
+                .map(Likes::getPostId)
+                .collect(Collectors.toList());
+        if (likedPostIds.isEmpty()) {
+            // If there are no liked posts, return an empty page
+            return new Page<>();
+        }
+        Page<Post> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", likedPostIds);
+        IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
+        return pageResult;
+    }
+
+    @Override
+    public IPage<Post> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        List<Long> savedPostIds = savesMapper.selectList(new QueryWrapper<Saves>().eq("user_id", userId))
+                .stream()
+                .map(Saves::getPostId)
+                .collect(Collectors.toList());
+        if (savedPostIds.isEmpty()) {
+            // If there are no saved posts, return an empty page
+            return new Page<>();
+        }
+        Page<Post> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", savedPostIds);
+        IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
+        return pageResult;
     }
 
 

@@ -1,12 +1,15 @@
 package com.fzq.xiaopotato.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fzq.xiaopotato.common.*;
 import com.fzq.xiaopotato.common.utils.JwtUtils;
 import com.fzq.xiaopotato.common.utils.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
+import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
+import com.fzq.xiaopotato.model.entity.Post;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -205,6 +208,26 @@ public class UserController {
 
         throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Update fail.");
 
+    }
+
+    @GetMapping("/likes")
+    public BaseResponse<IPage<Post>> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<Post> result = userService.listLikesByPage(pageDTO, request);
+        return ResultUtils.success(result);
+    }
+
+    @GetMapping("/saves")
+    public BaseResponse<IPage<Post>> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<Post> result = userService.listSavesByPage(pageDTO, request);
+        return ResultUtils.success(result);
     }
 
 }
