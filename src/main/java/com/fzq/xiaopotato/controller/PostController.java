@@ -10,6 +10,7 @@ import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
+import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.service.PostService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -78,7 +79,7 @@ public class PostController {
                 """)))
     })
     @GetMapping("/selectByPage")
-    public BaseResponse<IPage<Post>> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
+    public BaseResponse<IPage<PostVO>> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         if (postQueryDTO == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR, "Null query dto.");
         }
@@ -86,7 +87,7 @@ public class PostController {
             postQueryDTO.setCurrentPage(1);
             postQueryDTO.setPageSize(10);
         }
-        IPage<Post> result = postService.listPostByPage(postQueryDTO, request);
+        IPage<PostVO> result = postService.listPostByPage(postQueryDTO, request);
         return ResultUtils.success(result);
     }
 
@@ -109,7 +110,7 @@ public class PostController {
                 """)))
     })
     @GetMapping("/selectById")
-    public BaseResponse<Post> getPostById(IdDTO idDTO, HttpServletRequest request) {
+    public BaseResponse<PostVO> getPostById(IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR, "id is null");
         }
@@ -188,7 +189,7 @@ public class PostController {
                 """)))
     })
     @GetMapping("/selectByUserId")
-    public BaseResponse<IPage<Post>> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request) {
+    public BaseResponse<IPage<PostVO>> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         if (postQueryDTO == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR, "Null query dto.");
         }
@@ -196,51 +197,8 @@ public class PostController {
             postQueryDTO.setCurrentPage(1);
             postQueryDTO.setPageSize(10);
         }
-        IPage<Post> result = postService.listPostByUserId(postQueryDTO, request);
+        IPage<PostVO> result = postService.listPostByUserId(postQueryDTO, request);
         return ResultUtils.success(result);
     }
 
-    @Operation(summary = "Get Like Count for a Post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved like count for the post",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                        {
-                          "code": 200,
-                          "data": 15,
-                          "message": "ok",
-                          "description": "Number of likes for the specified post."
-                        }
-                """)))
-    })
-    @GetMapping("/getLikedCount")
-    public BaseResponse<Integer> getLikedCount(IdDTO idDTO, HttpServletRequest request) {
-        if (idDTO == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR, "post id is null");
-        }
-        return ResultUtils.success(postService.getLikedCount(idDTO, request));
-    }
-
-    @Operation(summary = "Get Save Count for a Post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved save count for the post",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                        {
-                          "code": 200,
-                          "data": 10,
-                          "message": "ok",
-                          "description": "Number of times the specified post has been saved."
-                        }
-                """)))
-    })
-    @GetMapping("/getSavedCount")
-    public BaseResponse<Integer> getSavedCount(IdDTO idDTO, HttpServletRequest request) {
-        if (idDTO == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR, "post id is null");
-        }
-        return ResultUtils.success(postService.getSavedCount(idDTO, request));
-    }
 }

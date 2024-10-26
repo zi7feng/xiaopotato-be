@@ -7,6 +7,7 @@ import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fzq.xiaopotato.model.vo.PostVO;
 import jakarta.servlet.http.HttpServletRequest;
 
 /**
@@ -18,18 +19,18 @@ public interface PostService extends IService<Post> {
 
     Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request);
 
-    IPage<Post> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request);
+    IPage<PostVO> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request);
 
-    Post selectPostById(IdDTO idDTO, HttpServletRequest request);
+    PostVO selectPostById(IdDTO idDTO, HttpServletRequest request);
 
     Boolean updatePostById(PostUpdateDTO postUpdateDTO, HttpServletRequest request);
 
     Boolean deletePostById(IdDTO idDTO, HttpServletRequest request);
 
-    IPage<Post> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request);
+    IPage<PostVO> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request);
 
-    Integer getLikedCount(IdDTO idDTO, HttpServletRequest request);
+    Integer getLikedCount(IdDTO idDTO);
 
-    Integer getSavedCount(IdDTO idDTO, HttpServletRequest request);
+    Integer getSavedCount(IdDTO idDTO);
 
 }
