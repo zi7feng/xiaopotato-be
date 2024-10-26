@@ -14,12 +14,14 @@ import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.*;
+import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.PostService;
 import com.fzq.xiaopotato.service.UserService;
 import com.fzq.xiaopotato.service.UsertagService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -106,7 +108,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     }
 
     @Override
-    public IPage<Post> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
+    public IPage<PostVO> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         if (user == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
@@ -152,11 +154,26 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         Page<Post> pageResult = new Page<>(currentPage, pageSize, sortedPosts.size());
         pageResult.setRecords(paginatedPosts);
 
-        return pageResult;
+        List<PostVO> postVOList = pageResult.getRecords().stream().map(
+                post -> {
+                    PostVO postVO = new PostVO();
+                    BeanUtils.copyProperties(post, postVO);
+                    IdDTO idDTO = new IdDTO();
+                    idDTO.setId(post.getId());
+                    postVO.setLikeCount(getLikedCount(idDTO));
+                    postVO.setSaveCount(getSavedCount(idDTO));
+                    postVO.setCommentCount(0);
+                    return postVO;
+                }
+        ).collect(Collectors.toList());
+        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        postVOPage.setRecords(postVOList);
+
+        return postVOPage;
     }
 
     @Override
-    public Post selectPostById(IdDTO idDTO, HttpServletRequest request) {
+    public PostVO selectPostById(IdDTO idDTO, HttpServletRequest request) {
         if (userService.getCurrentUser(request) == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
@@ -169,7 +186,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (post == null || post.getIsDelete() == 1) {
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Post not found or deleted.");
         }
-        return post;
+
+        PostVO postVO = new PostVO();
+        BeanUtils.copyProperties(post, postVO);
+        postVO.setLikeCount(getLikedCount(idDTO));
+        postVO.setSaveCount(getSavedCount(idDTO));
+        postVO.setCommentCount(0);
+        return postVO;
     }
 
     @Override
@@ -270,7 +293,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     }
 
     @Override
-    public IPage<Post> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request) {
+    public IPage<PostVO> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         if (user == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
@@ -300,24 +323,36 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
 
         IPage<Post> pageResult = this.page(page, queryWrapper);
-        return pageResult;
+
+        List<PostVO> postVOList = pageResult.getRecords().stream().map(
+                post -> {
+                    PostVO postVO = new PostVO();
+                    BeanUtils.copyProperties(post, postVO);
+                    IdDTO idDTO = new IdDTO();
+                    idDTO.setId(post.getId());
+                    postVO.setLikeCount(getLikedCount(idDTO));
+                    postVO.setSaveCount(getSavedCount(idDTO));
+                    postVO.setCommentCount(0);
+                    return postVO;
+                }
+        ).collect(Collectors.toList());
+        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        postVOPage.setRecords(postVOList);
+
+        return postVOPage;
     }
 
     @Override
-    public Integer getLikedCount(IdDTO idDTO, HttpServletRequest request) {
-        if (userService.getCurrentUser(request) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
-        }
+    public Integer getLikedCount(IdDTO idDTO) {
+
         Long postId = idDTO.getId();
         Long count = likesMapper.selectCount(new QueryWrapper<Likes>().eq("post_id", postId));
         return count != null ? count.intValue() : 0;
     }
 
     @Override
-    public Integer getSavedCount(IdDTO idDTO, HttpServletRequest request) {
-        if (userService.getCurrentUser(request) == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
-        }
+    public Integer getSavedCount(IdDTO idDTO) {
+
         Long postId = idDTO.getId();
         Long count = savesMapper.selectCount(new QueryWrapper<Saves>().eq("post_id", postId));
         return count != null ? count.intValue() : 0;
