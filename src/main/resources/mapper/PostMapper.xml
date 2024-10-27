@@ -9,6 +9,7 @@
             <result property="postTitle" column="post_title" jdbcType="VARCHAR"/>
             <result property="postContent" column="post_content" jdbcType="VARCHAR"/>
             <result property="postImage" column="post_image" jdbcType="VARCHAR"/>
+            <result property="postGenre" column="post_genre" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
@@ -16,7 +17,7 @@
 
     <sql id="Base_Column_List">
         id,post_title,post_content,
-        post_image,create_time,
+        post_image, post_genre, create_time,
         update_time,is_delete
     </sql>
 </mapper>

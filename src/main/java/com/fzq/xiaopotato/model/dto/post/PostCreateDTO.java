@@ -24,4 +24,7 @@ public class PostCreateDTO implements Serializable {
      */
     private String postImage;
 
+    private String postGenre;
+
+
 }

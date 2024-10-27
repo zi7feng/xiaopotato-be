@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,14 +35,8 @@ public class TagRecommendationUtils {
 
     public int calculateEditDistance(String s1, String s2) {
         int[][] dp = new int[s1.length() + 1][s2.length() + 1];
-
-        for (int i = 0; i <= s1.length(); i++) {
-            dp[i][0] = i;
-        }
-        for (int j = 0; j <= s2.length(); j++) {
-            dp[0][j] = j;
-        }
-
+        for (int i = 0; i <= s1.length(); i++) dp[i][0] = i;
+        for (int j = 0; j <= s2.length(); j++) dp[0][j] = j;
         for (int i = 1; i <= s1.length(); i++) {
             for (int j = 1; j <= s2.length(); j++) {
                 if (s1.charAt(i - 1) == s2.charAt(j - 1)) {
@@ -67,7 +62,14 @@ public class TagRecommendationUtils {
                 .stream()
                 .map(Usertag::getTagId)
                 .collect(Collectors.toList());
-        // get content from the tag table by tagId
+
+        if (userTagIds.isEmpty()) {
+            logger.info("User with ID {} has no tags, skipping recommendation generation.", userId);
+            cacheRecommendedPosts(userId, Collections.emptyList());  // cache empty list
+            return CompletableFuture.completedFuture(Collections.emptyList());
+        }
+
+        // get user tag contents
         List<String> userTags = tagMapper.selectList(
                         new QueryWrapper<Tag>().in("id", userTagIds))
                 .stream()
@@ -77,31 +79,62 @@ public class TagRecommendationUtils {
         Map<Long, Integer> postScores = new HashMap<>();
 
         for (Long postId : postIds) {
-            // get post's all tagId
+            logger.info("Starting calculation on Post: {}", postId);
+
+            // get post's tag IDs and content
             List<Long> postTagIds = posttagMapper.selectList(
                             new QueryWrapper<Posttag>().eq("post_id", postId))
                     .stream()
                     .map(Posttag::getTagId)
                     .collect(Collectors.toList());
-            // get content from the tag table by tagId
+
             List<String> postTags = tagMapper.selectList(
                             new QueryWrapper<Tag>().in("id", postTagIds))
                     .stream()
                     .map(Tag::getContent)
                     .collect(Collectors.toList());
-            // calculate the similar rate score for each user
-            int score = 0;
+
+            int exactMatchBonus = 0; // Bonus score for exact matches
+            int totalEditDistance = 0; // Cumulative edit distance score
+
+            // Calculate score based on tag similarity
             for (String userTag : userTags) {
+                boolean exactMatch = false;
+                int minDistance = Integer.MAX_VALUE;
+
                 for (String postTag : postTags) {
-                    score += calculateEditDistance(userTag, postTag);
+                    if (userTag.equals(postTag)) {
+                        exactMatch = true;
+                        break; // prioritize exact match
+                    } else {
+                        int distance = calculateEditDistance(userTag, postTag);
+                        minDistance = Math.min(minDistance, distance);
+                    }
+                }
+                // Apply exact match bonus or edit distance
+                if (exactMatch) {
+                    exactMatchBonus += 5; // Give a high bonus for exact matches
+                } else {
+                    totalEditDistance += minDistance; // add minimum edit distance for non-exact matches
                 }
             }
 
-            postScores.put(postId, score);
+            // Adjust score by considering tag matching ratio
+            int matchingRatioBonus = 10 * exactMatchBonus / postTags.size();
+
+            logger.info("totalEditDistance: {}", totalEditDistance);
+            logger.info("exact match bonus: {}", exactMatchBonus);
+            logger.info("matchingRatioBonus: {}", matchingRatioBonus);
+
+            // Total score (lower is better)
+            int totalScore = totalEditDistance - exactMatchBonus - matchingRatioBonus;
+            logger.info("total Score: {}", totalScore);
+
+            postScores.put(postId, totalScore);
         }
 
-        // get the top 20 with the highest score
-        List<Long> recommendedPostIds =  postScores.entrySet().stream()
+        // Sort and return the top 20 posts
+        List<Long> recommendedPostIds = postScores.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .limit(20)
                 .map(Map.Entry::getKey)
@@ -109,15 +142,20 @@ public class TagRecommendationUtils {
 
         cacheRecommendedPosts(userId, recommendedPostIds);
         return CompletableFuture.completedFuture(recommendedPostIds);
-
     }
+
 
     @Async
     public CompletableFuture<Void> cacheRecommendedPosts(Long userId, List<Long> recommendedPostIds) {
         logger.info("Caching recommended posts on thread: {}", Thread.currentThread().getId());
         String redisKey = "user_recommendation:" + userId;
-        redisTemplate.opsForList().rightPushAll(redisKey, recommendedPostIds);
-        redisTemplate.expire(redisKey, 24, TimeUnit.HOURS);  // expire 24 hours (schedule a task runs every 24 hours)
+        if (recommendedPostIds.isEmpty()) {
+            redisTemplate.delete(redisKey);
+        } else {
+            redisTemplate.opsForList().rightPushAll(redisKey, recommendedPostIds);
+            redisTemplate.expire(redisKey, 24, TimeUnit.HOURS);  // expire 24 hours (schedule a task runs every 24 hours)
+        }
+
         return CompletableFuture.completedFuture(null);
     }
 

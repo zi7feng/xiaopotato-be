@@ -31,6 +31,9 @@ public class PostVO implements Serializable {
      */
     private String postImage;
 
+    private String postGenre;
+
+
 
     /**
      * Create Time
