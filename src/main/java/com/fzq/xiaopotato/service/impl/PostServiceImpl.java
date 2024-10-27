@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -72,6 +73,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         post.setPostTitle(postCreateDTO.getPostTitle());
         post.setPostContent(postCreateDTO.getPostContent());
         post.setPostImage(postCreateDTO.getPostImage());
+        post.setPostGenre(postCreateDTO.getPostGenre());
 
         postMapper.insert(post);
         UserPost userPost = new UserPost();
@@ -118,6 +120,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
         String title = postQueryDTO.getPostTitle();
         String content = postQueryDTO.getPostContent();
+        String genre = postQueryDTO.getPostGenre();
 
         if (!StringUtils.isEmpty(title)) {
             queryWrapper.like("post_title", title);
@@ -125,25 +128,45 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (!StringUtils.isEmpty(content)) {
             queryWrapper.like("post_content", content);
         }
-        List<Post> allPosts = this.list(queryWrapper);
+        if (!StringUtils.isEmpty(genre)) {
+            queryWrapper.eq("post_genre", genre);
+        }        List<Post> allPosts = this.list(queryWrapper);
         // get recommended post list from redis
         String redisKey = "user_recommendation:" + user.getId();
         List<Object> recommendedPostIdsObj = redisTemplate.opsForList().range(redisKey, 0, -1);
 
-        List<Long> recommendedPostIds = recommendedPostIdsObj.stream()
-                .flatMap(obj -> ((List<Long>) obj).stream())
-                .collect(Collectors.toList());
-        List<Post> sortedPosts = allPosts.stream()
-                .sorted((post1, post2) -> {
-                    boolean post1Recommended = recommendedPostIds.contains(post1.getId());
-                    boolean post2Recommended = recommendedPostIds.contains(post2.getId());
+        List<Long> recommendedPostIds;
+        if (recommendedPostIdsObj == null || recommendedPostIdsObj.isEmpty()) {
+            recommendedPostIds = Collections.emptyList();
+        } else {
+            recommendedPostIds = recommendedPostIdsObj.stream()
+                    .flatMap(obj -> ((List<?>) obj).stream())
+                    .map(id -> (Long) id)
+                    .collect(Collectors.toList());
+        }
+        List<Post> sortedPosts;
+        if (recommendedPostIds.isEmpty()) {
+            sortedPosts = allPosts; // no sorting, just use the original list
+        } else {
+            sortedPosts = allPosts.stream()
+                    .sorted((post1, post2) -> {
+                        int index1 = recommendedPostIds.indexOf(post1.getId());
+                        int index2 = recommendedPostIds.indexOf(post2.getId());
 
-                    // sorted by whether is recommended
-                    if (post1Recommended && !post2Recommended) return -1;
-                    if (!post1Recommended && post2Recommended) return 1;
-                    return 0;
-                })
-                .collect(Collectors.toList());
+                        // Place posts in the order of recommendation score
+                        if (index1 == -1 && index2 != -1) return 1;  // post2 is recommended, so it comes first
+                        if (index1 != -1 && index2 == -1) return -1; // post1 is recommended, so it comes first
+
+                        if (index1 != -1 && index2 != -1) {
+                            // Both are recommended, sort by index in recommendedPostIds
+                            return Integer.compare(index1, index2);
+                        }
+
+                        return 0; // both are non-recommended, retain original order
+                    })
+                    .collect(Collectors.toList());
+        }
+
 
         int currentPage = postQueryDTO.getCurrentPage();
         int pageSize = postQueryDTO.getPageSize();
@@ -228,6 +251,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         post.setPostTitle(postUpdateDTO.getPostTitle());
         post.setPostContent(postUpdateDTO.getPostContent());
         post.setPostImage(postUpdateDTO.getPostImage());
+        post.setPostGenre(postUpdateDTO.getPostGenre());
         int result = postMapper.updateById(post);
         if (result > 0) {
             // delete old tag relations
@@ -313,13 +337,17 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
         String title = postQueryDTO.getPostTitle();
         String content = postQueryDTO.getPostContent();
-
+        String genre = postQueryDTO.getPostGenre();
         if (!StringUtils.isEmpty(title)) {
             queryWrapper.like("post_title", title);
         }
         if (!StringUtils.isEmpty(content)) {
             queryWrapper.like("post_content", content);
         }
+        if (!StringUtils.isEmpty(genre)) {
+            queryWrapper.eq("post_genre", genre);
+        }
+
 
 
         IPage<Post> pageResult = this.page(page, queryWrapper);

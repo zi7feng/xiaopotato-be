@@ -29,8 +29,9 @@ CREATE TABLE IF NOT EXISTS POTATO.Post
 (
     id             BIGINT AUTO_INCREMENT COMMENT 'ID' PRIMARY KEY,
     post_title     VARCHAR(256)                           NOT NULL COMMENT 'Post Title',
-    post_content   VARCHAR(256)                           NOT NULL COMMENT 'Post Content',
-    post_image     VARCHAR(256)                           NOT NULL COMMENT 'post image',
+    post_content   VARCHAR(8192)                         NOT NULL COMMENT 'Post Content',
+    post_image     VARCHAR(1024)                          NOT NULL COMMENT 'post image',
+    post_genre     VARCHAR(256)                           NOT NULL COMMENT 'post genre',
     create_time    DATETIME     DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Create Time',
     update_time    DATETIME     DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update Time',
     is_delete      TINYINT      DEFAULT 0                 NOT NULL COMMENT 'Is Deleted? (1 - Deleted)'

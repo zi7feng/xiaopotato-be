@@ -12,6 +12,8 @@ public class PostQueryDTO implements Serializable {
     private Integer pageSize = 10;
     private String postTitle;
     private String postContent;
+    private String postGenre;
+
 
 
 }

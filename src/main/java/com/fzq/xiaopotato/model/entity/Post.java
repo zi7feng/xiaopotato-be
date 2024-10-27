@@ -37,6 +37,9 @@ public class Post implements Serializable {
     @TableField(value = "post_image")
     private String postImage;
 
+    @TableField(value = "post_genre")
+    private String postGenre;
+
 
     /**
      * Create Time
