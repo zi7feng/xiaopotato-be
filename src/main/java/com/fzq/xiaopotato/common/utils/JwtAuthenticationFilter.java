@@ -47,7 +47,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();  // Get the request path
 
         // If the request path is excluded from authentication, allow the request to pass
-        if (EXCLUDED_PATHS.contains(path)) {
+        if (EXCLUDED_PATHS.contains(path) || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
