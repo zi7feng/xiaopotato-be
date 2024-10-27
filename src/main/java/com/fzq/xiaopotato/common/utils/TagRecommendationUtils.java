@@ -76,7 +76,7 @@ public class TagRecommendationUtils {
                 .map(Tag::getContent)
                 .collect(Collectors.toList());
 
-        Map<Long, Integer> postScores = new HashMap<>();
+        Map<Long, Double> postScores = new HashMap<>();
 
         for (Long postId : postIds) {
             logger.info("Starting calculation on Post: {}", postId);
@@ -93,6 +93,13 @@ public class TagRecommendationUtils {
                     .stream()
                     .map(Tag::getContent)
                     .collect(Collectors.toList());
+
+
+            // Jaccard 相似度分数
+            int intersectionSize = (int) userTags.stream().filter(postTags::contains).count();
+            int unionSize = userTags.size() + postTags.size() - intersectionSize;
+            double jaccardSimilarity = unionSize == 0 ? 0 : (double) intersectionSize / unionSize;
+            int jaccardBonus = (int) (jaccardSimilarity * 20); // 将 Jaccard 相似度比例转为加分项
 
             int exactMatchBonus = 0; // Bonus score for exact matches
             int totalEditDistance = 0; // Cumulative edit distance score
@@ -125,9 +132,10 @@ public class TagRecommendationUtils {
             logger.info("totalEditDistance: {}", totalEditDistance);
             logger.info("exact match bonus: {}", exactMatchBonus);
             logger.info("matchingRatioBonus: {}", matchingRatioBonus);
+            logger.info("jaccardBonus: {}", jaccardBonus);
 
             // Total score (lower is better)
-            int totalScore = totalEditDistance - exactMatchBonus - matchingRatioBonus;
+            double totalScore = 0.5 * exactMatchBonus - 0.3 * jaccardBonus - 0.1 * totalEditDistance - 0.1 * matchingRatioBonus;
             logger.info("total Score: {}", totalScore);
 
             postScores.put(postId, totalScore);
