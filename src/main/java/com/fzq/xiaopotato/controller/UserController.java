@@ -5,6 +5,7 @@ import com.fzq.xiaopotato.common.*;
 import com.fzq.xiaopotato.common.utils.JwtUtils;
 import com.fzq.xiaopotato.common.utils.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
+import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
@@ -228,6 +229,15 @@ public class UserController {
         }
         IPage<Post> result = userService.listSavesByPage(pageDTO, request);
         return ResultUtils.success(result);
+    }
+
+    @GetMapping("/selectById")
+    public BaseResponse<UserVO> getUserById(IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "id is null");
+        }
+        return ResultUtils.success(userService.selectUserById(idDTO, request));
+
     }
 
 }

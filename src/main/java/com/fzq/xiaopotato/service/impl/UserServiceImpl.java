@@ -8,6 +8,7 @@ import com.fzq.xiaopotato.common.*;
 import com.fzq.xiaopotato.common.utils.*;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.*;
+import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
@@ -22,6 +23,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -318,6 +320,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.in("id", savedPostIds);
         IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
         return pageResult;
+    }
+
+    @Override
+    public UserVO selectUserById(IdDTO idDTO, HttpServletRequest request) {
+        if (getCurrentUser(request) == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = idDTO.getId();
+        User user = userMapper.selectById(userId);
+        if (user == null || user.getIsDelete() == 1) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "User not found or deleted.");
+        }
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        userVO.setFansCount(0);
+        userVO.setFollowCount(0);
+        return userVO;
     }
 
 

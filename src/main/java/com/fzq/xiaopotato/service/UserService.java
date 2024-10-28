@@ -1,6 +1,7 @@
 package com.fzq.xiaopotato.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
@@ -32,4 +33,6 @@ public interface UserService extends IService<User> {
     IPage<Post> listLikesByPage(PageDTO pageDTO, HttpServletRequest request);
 
     IPage<Post> listSavesByPage(PageDTO pageDTO, HttpServletRequest request);
+
+    UserVO selectUserById(IdDTO idDTO, HttpServletRequest request);
 }
