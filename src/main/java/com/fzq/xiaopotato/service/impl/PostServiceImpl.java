@@ -62,6 +62,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Autowired
     private SavesMapper savesMapper;
+    @Autowired
+    private UserMapper userMapper;
 
     @Override
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
@@ -179,6 +181,22 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setLikeCount(getLikedCount(idDTO));
                     postVO.setSaveCount(getSavedCount(idDTO));
                     postVO.setCommentCount(0);
+
+                    // get creator's info
+                    Long userId = userPostMapper.selectOne(
+                            new QueryWrapper<UserPost>().eq("post_id", post.getId())
+                    ).getUserId();
+                    if (userId != null) {
+                        User userEntity = userMapper.selectById(userId);
+                        if (userEntity != null) {
+                            postVO.setCreatorId(userEntity.getId());
+                            postVO.setCreatorFirstName(userEntity.getFirstName());
+                            postVO.setCreatorLastName(userEntity.getLastName());
+                            postVO.setCreatorAccount(userEntity.getUserAccount());
+                            postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                        }
+                    }
+
                     return postVO;
                 }
         ).collect(Collectors.toList());
@@ -208,6 +226,20 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         postVO.setLikeCount(getLikedCount(idDTO));
         postVO.setSaveCount(getSavedCount(idDTO));
         postVO.setCommentCount(0);
+        // get creator's info
+        Long userId = userPostMapper.selectOne(
+                new QueryWrapper<UserPost>().eq("post_id", post.getId())
+        ).getUserId();
+        if (userId != null) {
+            User userEntity = userMapper.selectById(userId);
+            if (userEntity != null) {
+                postVO.setCreatorId(userEntity.getId());
+                postVO.setCreatorFirstName(userEntity.getFirstName());
+                postVO.setCreatorLastName(userEntity.getLastName());
+                postVO.setCreatorAccount(userEntity.getUserAccount());
+                postVO.setCreatorAvatar(userEntity.getUserAvatar());
+            }
+        }
         return postVO;
     }
 
@@ -354,6 +386,20 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setLikeCount(getLikedCount(idDTO));
                     postVO.setSaveCount(getSavedCount(idDTO));
                     postVO.setCommentCount(0);
+                    // get creator's info
+                    Long creatorId = userPostMapper.selectOne(
+                            new QueryWrapper<UserPost>().eq("post_id", post.getId())
+                    ).getUserId();
+                    if (creatorId != null) {
+                        User userEntity = userMapper.selectById(creatorId);
+                        if (userEntity != null) {
+                            postVO.setCreatorId(userEntity.getId());
+                            postVO.setCreatorFirstName(userEntity.getFirstName());
+                            postVO.setCreatorLastName(userEntity.getLastName());
+                            postVO.setCreatorAccount(userEntity.getUserAccount());
+                            postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                        }
+                    }
                     return postVO;
                 }
         ).collect(Collectors.toList());
