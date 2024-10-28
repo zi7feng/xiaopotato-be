@@ -51,6 +51,28 @@ public class PostVO implements Serializable {
 
     private int commentCount;
 
+
+    /**
+     * user info
+     */
+    private Long creatorId;
+
+
+    private String creatorFirstName;
+
+    private String creatorLastName;
+
+
+    /**
+     * User Account
+     */
+    private String creatorAccount;
+
+    /**
+     * User Avatar
+     */
+    private String creatorAvatar;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

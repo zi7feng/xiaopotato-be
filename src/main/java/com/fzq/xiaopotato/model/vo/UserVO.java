@@ -44,6 +44,10 @@ public class UserVO implements Serializable {
     private String description;
 
 
+    private Integer followCount;
+
+    private Integer fansCount;
+
 
     /**
      * user Role：user / admin
