@@ -255,10 +255,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     .collect(Collectors.toList());
 
             // async generate and cache recommendation list
-            CompletableFuture<List<Long>> recommendedPostsFuture = tagRecommendationUtils.generateRecommendedPosts(id, allPostIds, usertagMapper, posttagMapper, tagMapper);
-            recommendedPostsFuture.thenAccept(recommendedPosts ->
-                    tagRecommendationUtils.cacheRecommendedPosts(id, recommendedPosts)
-            );
+//            CompletableFuture<List<Long>> recommendedPostsFuture = tagRecommendationUtils.generateRecommendedPosts(id, allPostIds, usertagMapper, posttagMapper, tagMapper);
+//            recommendedPostsFuture.thenAccept(recommendedPosts ->
+//                    tagRecommendationUtils.cacheRecommendedPosts(id, recommendedPosts)
+//            );
+            CompletableFuture.runAsync(() -> {
+                tagRecommendationUtils.generateRecommendedPosts(id, allPostIds, usertagMapper, posttagMapper, tagMapper)
+                        .thenAccept(recommendedPosts -> tagRecommendationUtils.cacheRecommendedPosts(id, recommendedPosts));
+            });
         }
 
         return updateResult;
