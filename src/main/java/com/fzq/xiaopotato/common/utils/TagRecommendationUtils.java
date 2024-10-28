@@ -148,7 +148,7 @@ public class TagRecommendationUtils {
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
 
-        cacheRecommendedPosts(userId, recommendedPostIds);
+//        cacheRecommendedPosts(userId, recommendedPostIds);
         return CompletableFuture.completedFuture(recommendedPostIds);
     }
 
