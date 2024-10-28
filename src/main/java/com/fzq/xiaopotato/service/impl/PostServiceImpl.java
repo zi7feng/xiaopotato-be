@@ -153,16 +153,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                         int index1 = recommendedPostIds.indexOf(post1.getId());
                         int index2 = recommendedPostIds.indexOf(post2.getId());
 
-                        // Place posts in the order of recommendation score
-                        if (index1 == -1 && index2 != -1) return 1;  // post2 is recommended, so it comes first
-                        if (index1 != -1 && index2 == -1) return -1; // post1 is recommended, so it comes first
-
-                        if (index1 != -1 && index2 != -1) {
-                            // Both are recommended, sort by index in recommendedPostIds
-                            return Integer.compare(index1, index2);
-                        }
-
-                        return 0; // both are non-recommended, retain original order
+                        if (index1 == -1 && index2 != -1) return 1;
+                        if (index1 != -1 && index2 == -1) return -1;
+                        return Integer.compare(index1, index2);
                     })
                     .collect(Collectors.toList());
         }

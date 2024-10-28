@@ -26,7 +26,6 @@ public class TagRecommendationUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(TagRecommendationUtils.class);
 
-
     private final RedisTemplate<String, Object> redisTemplate;
 
     public TagRecommendationUtils(RedisTemplate<String, Object> redisTemplate) {
@@ -49,6 +48,38 @@ public class TagRecommendationUtils {
         return dp[s1.length()][s2.length()];
     }
 
+
+
+    private double calculateJaccardSimilarity(List<String> userTags, List<String> postTags) {
+        int intersectionSize = (int) userTags.stream().filter(postTags::contains).count();
+        int unionSize = userTags.size() + postTags.size() - intersectionSize;
+        return unionSize == 0 ? 0 : (double) intersectionSize / unionSize;
+    }
+
+    private int calculateEditDistanceScore(List<String> userTags, List<String> postTags) {
+        int score = 0;
+
+        for (String userTag : userTags) {
+            int minScoreForTag = Integer.MAX_VALUE; // 用于存储该 userTag 与 postTags 的最小得分
+
+            for (String postTag : postTags) {
+                int distance = calculateEditDistance(userTag, postTag);
+
+                // 根据最小编辑距离计算得分，但不累加，只取最小分数
+                if (distance <= 7) {
+                    int tempScore = 15 - distance * 2; // Partial match score
+                    minScoreForTag = Math.min(minScoreForTag, tempScore); // 更新最小得分
+                }
+            }
+
+            // 如果没有小于或等于 7 的匹配距离，则得分为 0
+            score += minScoreForTag == Integer.MAX_VALUE ? 0 : minScoreForTag;
+        }
+
+        return score;
+    }
+
+
     @Async
     public CompletableFuture<List<Long>> generateRecommendedPosts(Long userId, List<Long> postIds,
                                                                   UsertagMapper usertagMapper,
@@ -56,7 +87,7 @@ public class TagRecommendationUtils {
                                                                   TagMapper tagMapper) {
         logger.info("Generating recommended posts on thread: {}", Thread.currentThread().getId());
 
-        // get user's all tagIds
+        // 获取用户的所有标签ID
         List<Long> userTagIds = usertagMapper.selectList(
                         new QueryWrapper<Usertag>().eq("user_id", userId))
                 .stream()
@@ -65,11 +96,11 @@ public class TagRecommendationUtils {
 
         if (userTagIds.isEmpty()) {
             logger.info("User with ID {} has no tags, skipping recommendation generation.", userId);
-            cacheRecommendedPosts(userId, Collections.emptyList());  // cache empty list
+            cacheRecommendedPosts(userId, Collections.emptyList());  // 缓存空列表
             return CompletableFuture.completedFuture(Collections.emptyList());
         }
 
-        // get user tag contents
+        // 获取用户的标签内容
         List<String> userTags = tagMapper.selectList(
                         new QueryWrapper<Tag>().in("id", userTagIds))
                 .stream()
@@ -81,7 +112,7 @@ public class TagRecommendationUtils {
         for (Long postId : postIds) {
             logger.info("Starting calculation on Post: {}", postId);
 
-            // get post's tag IDs and content
+            // 获取帖子的标签ID和内容
             List<Long> postTagIds = posttagMapper.selectList(
                             new QueryWrapper<Posttag>().eq("post_id", postId))
                     .stream()
@@ -94,61 +125,28 @@ public class TagRecommendationUtils {
                     .map(Tag::getContent)
                     .collect(Collectors.toList());
 
+            // 计算相似度得分
+            double jaccardSimilarity = calculateJaccardSimilarity(userTags, postTags);
+            int editDistanceScore = calculateEditDistanceScore(userTags, postTags);
 
-            // Jaccard 相似度分数
-            int intersectionSize = (int) userTags.stream().filter(postTags::contains).count();
-            int unionSize = userTags.size() + postTags.size() - intersectionSize;
-            double jaccardSimilarity = unionSize == 0 ? 0 : (double) intersectionSize / unionSize;
-            int jaccardBonus = (int) (jaccardSimilarity * 20); // 将 Jaccard 相似度比例转为加分项
+            logger.info("jaccard similarity: {}", jaccardSimilarity);
+            logger.info("edit distance score: {}", editDistanceScore);
 
-            int exactMatchBonus = 0; // Bonus score for exact matches
-            int totalEditDistance = 0; // Cumulative edit distance score
-
-            // Calculate score based on tag similarity
-            for (String userTag : userTags) {
-                boolean exactMatch = false;
-                int minDistance = Integer.MAX_VALUE;
-
-                for (String postTag : postTags) {
-                    if (userTag.equals(postTag)) {
-                        exactMatch = true;
-                        break; // prioritize exact match
-                    } else {
-                        int distance = calculateEditDistance(userTag, postTag);
-                        minDistance = Math.min(minDistance, distance);
-                    }
-                }
-                // Apply exact match bonus or edit distance
-                if (exactMatch) {
-                    exactMatchBonus += 5; // Give a high bonus for exact matches
-                } else {
-                    totalEditDistance += minDistance; // add minimum edit distance for non-exact matches
-                }
-            }
-
-            // Adjust score by considering tag matching ratio
-            int matchingRatioBonus = 10 * exactMatchBonus / postTags.size();
-
-            logger.info("totalEditDistance: {}", totalEditDistance);
-            logger.info("exact match bonus: {}", exactMatchBonus);
-            logger.info("matchingRatioBonus: {}", matchingRatioBonus);
-            logger.info("jaccardBonus: {}", jaccardBonus);
-
-            // Total score (lower is better)
-            double totalScore = 0.5 * exactMatchBonus - 0.3 * jaccardBonus - 0.1 * totalEditDistance - 0.1 * matchingRatioBonus;
-            logger.info("total Score: {}", totalScore);
+            // 计算总分并加上波动系数
+            double fluctuationFactor = 0.9 + (Math.random() * 0.2);
+            double totalScore = (  (-0.85) * jaccardSimilarity - 0.15 * editDistanceScore) * fluctuationFactor;
+            logger.info("total: {}", totalScore);
 
             postScores.put(postId, totalScore);
         }
 
-        // Sort and return the top 20 posts
+        // 按分数降序排序并限制到前20名
         List<Long> recommendedPostIds = postScores.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue())
+                .sorted(Map.Entry.comparingByValue()) // 使用升序排序
                 .limit(20)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toList());
-
-//        cacheRecommendedPosts(userId, recommendedPostIds);
+        cacheRecommendedPosts(userId, recommendedPostIds);
         return CompletableFuture.completedFuture(recommendedPostIds);
     }
 
@@ -157,16 +155,9 @@ public class TagRecommendationUtils {
     public CompletableFuture<Void> cacheRecommendedPosts(Long userId, List<Long> recommendedPostIds) {
         logger.info("Caching recommended posts on thread: {}", Thread.currentThread().getId());
         String redisKey = "user_recommendation:" + userId;
-        if (recommendedPostIds.isEmpty()) {
-            redisTemplate.delete(redisKey);
-        } else {
-            redisTemplate.opsForList().rightPushAll(redisKey, recommendedPostIds);
-            redisTemplate.expire(redisKey, 24, TimeUnit.HOURS);  // expire 24 hours (schedule a task runs every 24 hours)
-        }
-
+        redisTemplate.delete(redisKey);
+        redisTemplate.opsForList().rightPushAll(redisKey, recommendedPostIds);
+        redisTemplate.expire(redisKey, 24, TimeUnit.HOURS);  // expire in 24 hours
         return CompletableFuture.completedFuture(null);
     }
-
-
-
 }
