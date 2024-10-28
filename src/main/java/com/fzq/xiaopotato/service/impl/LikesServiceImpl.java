@@ -61,6 +61,7 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
         return likesMapper.selectOne(queryWrapper) != null;
     }
 
+    @Override
     public boolean isLiked(IdDTO idDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         if (user == null) {

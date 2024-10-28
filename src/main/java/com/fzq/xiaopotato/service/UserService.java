@@ -38,4 +38,8 @@ public interface UserService extends IService<User> {
     UserVO selectUserById(IdDTO idDTO, HttpServletRequest request);
 
     IPage<UserVO> listUserByPage(UserQueryDTO userQueryDTO, HttpServletRequest request);
+
+    IPage<UserVO> listFansByPage(PageDTO pageDTO, HttpServletRequest request);
+    IPage<UserVO> listFollowsByPage(PageDTO pageDTO, HttpServletRequest request);
+
 }

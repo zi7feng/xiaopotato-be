@@ -62,6 +62,7 @@ public class SavesServiceImpl extends ServiceImpl<SavesMapper, Saves>
         return savesMapper.selectOne(queryWrapper) != null;
     }
 
+    @Override
     public boolean isSaved(IdDTO idDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
         if (user == null) {

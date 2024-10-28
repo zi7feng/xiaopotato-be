@@ -90,6 +90,8 @@ public class UserController {
                       "phone": "123-123-1234",
                       "gender": "string",
                       "description": "#tag",
+                      "followCount": 3,
+                      "fansCount": 1,
                       "userRole": "user",
                       "status": 0
                     },
@@ -154,6 +156,8 @@ public class UserController {
                       "phone": "123-123-1234",
                       "gender": "string",
                       "description": "#tag",
+                      "followCount": 3,
+                      "fansCount": 1,
                       "userRole": "user",
                       "status": 0
                     },
@@ -245,7 +249,7 @@ public class UserController {
 
 
     @GetMapping("/selectByPage")
-    public BaseResponse<IPage<UserVO>> listPostByPage(UserQueryDTO userQueryDTO, HttpServletRequest request) {
+    public BaseResponse<IPage<UserVO>> listUserByPage(UserQueryDTO userQueryDTO, HttpServletRequest request) {
         if (userQueryDTO == null) {
             throw new BusinessException(ErrorCode.NULL_ERROR, "Null query dto.");
         }
@@ -256,5 +260,27 @@ public class UserController {
         IPage<UserVO> result = userService.listUserByPage(userQueryDTO, request);
         return ResultUtils.success(result);
     }
+
+
+    @GetMapping("/fans")
+    public BaseResponse<IPage<UserVO>> listFansByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<UserVO> result = userService.listFansByPage(pageDTO, request);
+        return ResultUtils.success(result);
+    }
+
+    @GetMapping("/follows")
+    public BaseResponse<IPage<UserVO>> listFollowsByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<UserVO> result = userService.listFollowsByPage(pageDTO, request);
+        return ResultUtils.success(result);
+    }
+
 
 }

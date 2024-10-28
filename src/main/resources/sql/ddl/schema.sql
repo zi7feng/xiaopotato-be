@@ -101,3 +101,12 @@ CREATE TABLE IF NOT EXISTS  POTATO.Saves
     CONSTRAINT fk_post_save FOREIGN KEY (post_id) REFERENCES POTATO.Post(id) ON DELETE CASCADE ON UPDATE CASCADE
 
 );
+
+CREATE TABLE IF NOT EXISTS Userfollow (
+      follower_id BIGINT NOT NULL COMMENT 'ID of the user who is following',
+      followed_id BIGINT NOT NULL COMMENT 'ID of the user being followed',
+      create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
+      PRIMARY KEY (follower_id, followed_id),
+      CONSTRAINT fk_follower FOREIGN KEY (follower_id) REFERENCES User(id) ON DELETE CASCADE ON UPDATE CASCADE,
+      CONSTRAINT fk_followed FOREIGN KEY (followed_id) REFERENCES User(id) ON DELETE CASCADE ON UPDATE CASCADE
+) COMMENT 'User Follow Relationship Table';
