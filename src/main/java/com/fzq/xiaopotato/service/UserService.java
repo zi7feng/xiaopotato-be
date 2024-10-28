@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
+import com.fzq.xiaopotato.model.dto.user.UserQueryDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
@@ -35,4 +36,6 @@ public interface UserService extends IService<User> {
     IPage<Post> listSavesByPage(PageDTO pageDTO, HttpServletRequest request);
 
     UserVO selectUserById(IdDTO idDTO, HttpServletRequest request);
+
+    IPage<UserVO> listUserByPage(UserQueryDTO userQueryDTO, HttpServletRequest request);
 }

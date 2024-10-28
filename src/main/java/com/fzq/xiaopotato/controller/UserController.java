@@ -7,10 +7,13 @@ import com.fzq.xiaopotato.common.utils.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.common.PageDTO;
+import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
+import com.fzq.xiaopotato.model.dto.user.UserQueryDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
+import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -238,6 +241,20 @@ public class UserController {
         }
         return ResultUtils.success(userService.selectUserById(idDTO, request));
 
+    }
+
+
+    @GetMapping("/selectByPage")
+    public BaseResponse<IPage<UserVO>> listPostByPage(UserQueryDTO userQueryDTO, HttpServletRequest request) {
+        if (userQueryDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Null query dto.");
+        }
+        if (userQueryDTO.getCurrentPage() <= 0 || userQueryDTO.getPageSize() <= 0) {
+            userQueryDTO.setCurrentPage(1);
+            userQueryDTO.setPageSize(10);
+        }
+        IPage<UserVO> result = userService.listUserByPage(userQueryDTO, request);
+        return ResultUtils.success(result);
     }
 
 }

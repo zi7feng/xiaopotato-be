@@ -11,9 +11,11 @@ import com.fzq.xiaopotato.mapper.*;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.user.UserLoginDTO;
+import com.fzq.xiaopotato.model.dto.user.UserQueryDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.*;
+import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.LikesService;
 import com.fzq.xiaopotato.service.SavesService;
@@ -337,6 +339,44 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userVO.setFansCount(0);
         userVO.setFollowCount(0);
         return userVO;
+    }
+
+    @Override
+    public IPage<UserVO> listUserByPage(UserQueryDTO userQueryDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Page<User> page = new Page<>(userQueryDTO.getCurrentPage(), userQueryDTO.getPageSize());
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        Long userId = userQueryDTO.getUserId();
+        String userName = userQueryDTO.getSearchName();
+        if (userId > 0) {
+            queryWrapper.eq("id", userId);
+        }
+        if (!StringUtils.isEmpty(userName)) {
+            String lowerUserName = userName.toLowerCase();
+            queryWrapper.nested(wrapper ->
+                    wrapper.like("LOWER(first_name)", lowerUserName)
+                            .or()
+                            .like("LOWER(last_name)", lowerUserName)
+                            .or()
+                            .apply("LOWER(CONCAT(first_name, ' ', last_name)) LIKE {0}", "%" + lowerUserName + "%")
+            );
+        }
+        IPage<User> pageResult = this.page(page, queryWrapper);
+        List<UserVO> userVOList = pageResult.getRecords().stream().map(
+                usr -> {
+                    UserVO userVO = new UserVO();
+                    BeanUtils.copyProperties(usr, userVO);
+                    return userVO;
+                }
+        ).collect(Collectors.toList());
+        Page<UserVO> userVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        userVOPage.setRecords(userVOList);
+
+        return userVOPage;
+
     }
 
 
