@@ -200,7 +200,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     return postVO;
                 }
         ).collect(Collectors.toList());
-        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), sortedPosts.size());
         postVOPage.setRecords(postVOList);
 
         return postVOPage;
