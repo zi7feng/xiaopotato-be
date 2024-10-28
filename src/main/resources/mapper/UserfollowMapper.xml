@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fzq.xiaopotato.mapper.UserfollowMapper">
+
+    <resultMap id="BaseResultMap" type="com.fzq.xiaopotato.model.entity.Userfollow">
+            <id property="followerId" column="follower_id" jdbcType="BIGINT"/>
+            <id property="followedId" column="followed_id" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        follower_id,followed_id,create_time
+    </sql>
+</mapper>

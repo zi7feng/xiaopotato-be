@@ -70,6 +70,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private SavesMapper savesMapper;
 
     @Autowired
+    private UserfollowMapper userfollowMapper;
+
+    @Autowired
     private PostMapper postMapper;
 
 
@@ -336,8 +339,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
-        userVO.setFansCount(0);
-        userVO.setFollowCount(0);
+        userVO.setFansCount(getFollowerCount(idDTO));
+        userVO.setFollowCount(getFollowedCount(idDTO));
         return userVO;
     }
 
@@ -369,6 +372,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 usr -> {
                     UserVO userVO = new UserVO();
                     BeanUtils.copyProperties(usr, userVO);
+                    IdDTO idDTO = new IdDTO();
+                    idDTO.setId(usr.getId());
+                    userVO.setFansCount(getFollowerCount(idDTO));
+                    userVO.setFollowCount(getFollowedCount(idDTO));
                     return userVO;
                 }
         ).collect(Collectors.toList());
@@ -377,6 +384,95 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         return userVOPage;
 
+    }
+
+    @Override
+    public IPage<UserVO> listFansByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        List<Long> fansIds = userfollowMapper.selectList(new QueryWrapper<Userfollow>().eq("followed_id", userId))
+                .stream()
+                .map(Userfollow::getFollowerId)
+                .collect(Collectors.toList());
+        if (fansIds.isEmpty()) {
+            // If there are no saved posts, return an empty page
+            return new Page<>();
+        }
+        Page<User> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", fansIds);
+        IPage<User> pageResult = this.page(page, queryWrapper);
+        List<UserVO> userVOList = pageResult.getRecords().stream().map(
+                usr -> {
+                    UserVO userVO = new UserVO();
+                    BeanUtils.copyProperties(usr, userVO);
+                    IdDTO idDTO = new IdDTO();
+                    idDTO.setId(usr.getId());
+                    userVO.setFansCount(getFollowerCount(idDTO));
+                    userVO.setFollowCount(getFollowedCount(idDTO));
+                    return userVO;
+                }
+        ).collect(Collectors.toList());
+        Page<UserVO> userVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        userVOPage.setRecords(userVOList);
+
+        return userVOPage;
+
+    }
+
+    @Override
+    public IPage<UserVO> listFollowsByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        List<Long> followsIds = userfollowMapper.selectList(new QueryWrapper<Userfollow>().eq("follower_id", userId))
+                .stream()
+                .map(Userfollow::getFollowedId)
+                .collect(Collectors.toList());
+        if (followsIds.isEmpty()) {
+            // If there are no saved posts, return an empty page
+            return new Page<>();
+        }
+        Page<User> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", followsIds);
+        IPage<User> pageResult = this.page(page, queryWrapper);
+        List<UserVO> userVOList = pageResult.getRecords().stream().map(
+                usr -> {
+                    UserVO userVO = new UserVO();
+                    BeanUtils.copyProperties(usr, userVO);
+                    IdDTO idDTO = new IdDTO();
+                    idDTO.setId(usr.getId());
+                    userVO.setFansCount(getFollowerCount(idDTO));
+                    userVO.setFollowCount(getFollowedCount(idDTO));
+                    return userVO;
+                }
+        ).collect(Collectors.toList());
+        Page<UserVO> userVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        userVOPage.setRecords(userVOList);
+
+        return userVOPage;
+
+    }
+
+
+    private Integer getFollowerCount(IdDTO idDTO) {
+        Long userId = idDTO.getId();
+        Long count = userfollowMapper.selectCount(new QueryWrapper<Userfollow>().eq("followed_id", userId)); // get fans count: count in db in column "being followed"
+        return count != null ? count.intValue() : 0;
+    }
+
+    private Integer getFollowedCount(IdDTO idDTO) {
+        Long userId = idDTO.getId();
+        Long count = userfollowMapper.selectCount(new QueryWrapper<Userfollow>().eq("follower_id", userId)); // get followed user count, count in db in column "be a follower"
+        return count != null ? count.intValue() : 0;
     }
 
 
@@ -393,6 +489,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safeUser.setDescription(user.getDescription());
         safeUser.setPhone(user.getPhone());
         safeUser.setStatus(user.getStatus());
+        IdDTO idDTO = new IdDTO();
+        idDTO.setId(user.getId());
+        safeUser.setFollowCount(getFollowedCount(idDTO));
+        safeUser.setFansCount(getFollowerCount(idDTO));
+
         return safeUser;
     }
 }
