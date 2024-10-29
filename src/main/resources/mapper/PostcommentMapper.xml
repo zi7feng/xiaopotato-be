@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.fzq.xiaopotato.mapper.PostcommentMapper">
+
+    <resultMap id="BaseResultMap" type="com.fzq.xiaopotato.model.entity.Postcomment">
+            <result property="commentId" column="comment_id" jdbcType="BIGINT"/>
+            <result property="postId" column="post_id" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        comment_id,post_id
+    </sql>
+</mapper>

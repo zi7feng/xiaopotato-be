@@ -1,4 +1,5 @@
 INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+
 VALUES ('Post Title 1', 'Post Content 1', 'image1.jpg', 'All');
 
 INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)

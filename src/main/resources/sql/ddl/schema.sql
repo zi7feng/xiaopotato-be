@@ -110,3 +110,25 @@ CREATE TABLE IF NOT EXISTS Userfollow (
       CONSTRAINT fk_follower FOREIGN KEY (follower_id) REFERENCES User(id) ON DELETE CASCADE ON UPDATE CASCADE,
       CONSTRAINT fk_followed FOREIGN KEY (followed_id) REFERENCES User(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) COMMENT 'User Follow Relationship Table';
+
+
+CREATE TABLE Comment (
+    comment_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    content TEXT NOT NULL,
+    user_id BIGINT NOT NULL,
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
+    parent_id BIGINT DEFAULT NULL,
+    INDEX idx_parent_id (parent_id),
+    FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE,
+    FOREIGN KEY (parent_id) REFERENCES Comment(comment_id) ON DELETE CASCADE
+
+
+);
+
+CREATE TABLE Postcomment (
+    comment_id BIGINT NOT NULL,
+    post_id BIGINT NOT NULL,
+    FOREIGN KEY (comment_id) REFERENCES Comment(comment_id) ON DELETE CASCADE,
+    FOREIGN KEY (post_id) REFERENCES Post(id) ON DELETE CASCADE,
+    UNIQUE (comment_id, post_id)
+);
