@@ -51,6 +51,10 @@ public class PostVO implements Serializable {
 
     private int commentCount;
 
+    private boolean liked;
+
+    private boolean saved;
+
 
     /**
      * user info

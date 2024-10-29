@@ -16,9 +16,7 @@ import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
 import com.fzq.xiaopotato.model.entity.*;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
-import com.fzq.xiaopotato.service.PostService;
-import com.fzq.xiaopotato.service.UserService;
-import com.fzq.xiaopotato.service.UsertagService;
+import com.fzq.xiaopotato.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -59,6 +57,12 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Autowired
     private LikesMapper likesMapper;
+
+    @Autowired
+    private LikesService likesService;
+
+    @Autowired
+    private SavesService savesService;
 
     @Autowired
     private SavesMapper savesMapper;
@@ -180,6 +184,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     idDTO.setId(post.getId());
                     postVO.setLikeCount(getLikedCount(idDTO));
                     postVO.setSaveCount(getSavedCount(idDTO));
+                    postVO.setLiked(likesService.isLiked(idDTO, request));
+                    postVO.setSaved(savesService.isSaved(idDTO, request));
                     postVO.setCommentCount(0);
 
                     // get creator's info
@@ -225,6 +231,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         BeanUtils.copyProperties(post, postVO);
         postVO.setLikeCount(getLikedCount(idDTO));
         postVO.setSaveCount(getSavedCount(idDTO));
+        postVO.setLiked(likesService.isLiked(idDTO, request));
+        postVO.setSaved(savesService.isSaved(idDTO, request));
         postVO.setCommentCount(0);
         // get creator's info
         Long userId = userPostMapper.selectOne(
@@ -385,6 +393,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     idDTO.setId(post.getId());
                     postVO.setLikeCount(getLikedCount(idDTO));
                     postVO.setSaveCount(getSavedCount(idDTO));
+                    postVO.setLiked(likesService.isLiked(idDTO, request));
+                    postVO.setSaved(savesService.isSaved(idDTO, request));
                     postVO.setCommentCount(0);
                     // get creator's info
                     Long creatorId = userPostMapper.selectOne(
