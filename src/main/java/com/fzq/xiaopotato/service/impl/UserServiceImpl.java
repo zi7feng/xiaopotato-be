@@ -290,6 +290,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         BeanUtils.copyProperties(user, userVO);
         userVO.setFansCount(getFollowerCount(idDTO));
         userVO.setFollowCount(getFollowedCount(idDTO));
+        userVO.setFollowed(userfollowService.isFollowedByUser(idDTO, request));
         return userVO;
     }
 
@@ -325,6 +326,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     idDTO.setId(usr.getId());
                     userVO.setFansCount(getFollowerCount(idDTO));
                     userVO.setFollowCount(getFollowedCount(idDTO));
+                    userVO.setFollowed(userfollowService.isFollowedByUser(idDTO, request));
                     return userVO;
                 }
         ).collect(Collectors.toList());
