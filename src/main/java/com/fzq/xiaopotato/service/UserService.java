@@ -10,6 +10,7 @@ import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
 import com.fzq.xiaopotato.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -31,9 +32,6 @@ public interface UserService extends IService<User> {
 
     boolean isAdmin(UserVO user);
 
-    IPage<Post> listLikesByPage(PageDTO pageDTO, HttpServletRequest request);
-
-    IPage<Post> listSavesByPage(PageDTO pageDTO, HttpServletRequest request);
 
     UserVO selectUserById(IdDTO idDTO, HttpServletRequest request);
 

@@ -18,6 +18,7 @@ import com.fzq.xiaopotato.model.entity.*;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.LikesService;
+import com.fzq.xiaopotato.service.PostService;
 import com.fzq.xiaopotato.service.SavesService;
 import com.fzq.xiaopotato.service.UserService;
 import io.jsonwebtoken.Claims;
@@ -72,8 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private UserfollowMapper userfollowMapper;
 
-    @Autowired
-    private PostMapper postMapper;
+
 
 
 
@@ -283,49 +283,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return user.getUserRole().equals(ADMIN_ROLE);
     }
 
-    @Override
-    public IPage<Post> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
-        UserVO user = getCurrentUser(request);
-        if (user == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
-        }
-        Long userId = user.getId();
-        List<Long> likedPostIds = likesMapper.selectList(new QueryWrapper<Likes>().eq("user_id", userId))
-                .stream()
-                .map(Likes::getPostId)
-                .collect(Collectors.toList());
-        if (likedPostIds.isEmpty()) {
-            // If there are no liked posts, return an empty page
-            return new Page<>();
-        }
-        Page<Post> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
-        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("id", likedPostIds);
-        IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
-        return pageResult;
-    }
-
-    @Override
-    public IPage<Post> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
-        UserVO user = getCurrentUser(request);
-        if (user == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN);
-        }
-        Long userId = user.getId();
-        List<Long> savedPostIds = savesMapper.selectList(new QueryWrapper<Saves>().eq("user_id", userId))
-                .stream()
-                .map(Saves::getPostId)
-                .collect(Collectors.toList());
-        if (savedPostIds.isEmpty()) {
-            // If there are no saved posts, return an empty page
-            return new Page<>();
-        }
-        Page<Post> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
-        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
-        queryWrapper.in("id", savedPostIds);
-        IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
-        return pageResult;
-    }
 
     @Override
     public UserVO selectUserById(IdDTO idDTO, HttpServletRequest request) {

@@ -6,6 +6,7 @@ import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.common.utils.ResultUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
+import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
@@ -198,6 +199,27 @@ public class PostController {
             postQueryDTO.setPageSize(10);
         }
         IPage<PostVO> result = postService.listPostByUserId(postQueryDTO, request);
+        return ResultUtils.success(result);
+    }
+
+
+    @GetMapping("/likes")
+    public BaseResponse<IPage<PostVO>> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<PostVO> result = postService.listLikesByPage(pageDTO, request);
+        return ResultUtils.success(result);
+    }
+
+    @GetMapping("/saves")
+    public BaseResponse<IPage<PostVO>> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<PostVO> result = postService.listSavesByPage(pageDTO, request);
         return ResultUtils.success(result);
     }
 

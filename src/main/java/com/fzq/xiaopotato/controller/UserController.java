@@ -218,25 +218,7 @@ public class UserController {
 
     }
 
-    @GetMapping("/likes")
-    public BaseResponse<IPage<Post>> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
-        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
-            pageDTO.setCurrentPage(1);
-            pageDTO.setPageSize(10);
-        }
-        IPage<Post> result = userService.listLikesByPage(pageDTO, request);
-        return ResultUtils.success(result);
-    }
 
-    @GetMapping("/saves")
-    public BaseResponse<IPage<Post>> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
-        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
-            pageDTO.setCurrentPage(1);
-            pageDTO.setPageSize(10);
-        }
-        IPage<Post> result = userService.listSavesByPage(pageDTO, request);
-        return ResultUtils.success(result);
-    }
 
     @GetMapping("/selectById")
     public BaseResponse<UserVO> getUserById(IdDTO idDTO, HttpServletRequest request) {
