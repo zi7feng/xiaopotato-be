@@ -17,10 +17,7 @@ import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.*;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
-import com.fzq.xiaopotato.service.LikesService;
-import com.fzq.xiaopotato.service.PostService;
-import com.fzq.xiaopotato.service.SavesService;
-import com.fzq.xiaopotato.service.UserService;
+import com.fzq.xiaopotato.service.*;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 
@@ -65,17 +63,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private TagRecommendationUtils tagRecommendationUtils;
 
     @Autowired
-    private LikesMapper likesMapper;
-
-    @Autowired
-    private SavesMapper savesMapper;
-
-    @Autowired
     private UserfollowMapper userfollowMapper;
 
-
-
-
+    @Autowired
+    @Lazy
+    private UserfollowService userfollowService;
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -371,6 +363,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     idDTO.setId(usr.getId());
                     userVO.setFansCount(getFollowerCount(idDTO));
                     userVO.setFollowCount(getFollowedCount(idDTO));
+                    userVO.setFollowed(userfollowService.isFollowedByUser(idDTO, request));
                     return userVO;
                 }
         ).collect(Collectors.toList());
@@ -409,6 +402,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                     idDTO.setId(usr.getId());
                     userVO.setFansCount(getFollowerCount(idDTO));
                     userVO.setFollowCount(getFollowedCount(idDTO));
+                    userVO.setFollowed(userfollowService.isFollowedByUser(idDTO, request));
                     return userVO;
                 }
         ).collect(Collectors.toList());

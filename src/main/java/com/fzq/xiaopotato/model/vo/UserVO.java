@@ -48,6 +48,8 @@ public class UserVO implements Serializable {
 
     private Integer fansCount;
 
+    private boolean followed;
+
 
     /**
      * user Role：user / admin
