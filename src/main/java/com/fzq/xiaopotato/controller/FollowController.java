@@ -26,11 +26,5 @@ public class FollowController {
     }
 
 
-    @GetMapping("/isFollowed")
-    public BaseResponse<Boolean> isFollowed(IdDTO idDTO, HttpServletRequest request) {
-        if (idDTO == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR, "id is null");
-        }
-        return ResultUtils.success(userfollowService.isFollowedByUser(idDTO, request));
-    }
+
 }
