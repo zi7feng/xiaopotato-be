@@ -49,8 +49,6 @@ public class PostVO implements Serializable {
 
     private int saveCount;
 
-    private int commentCount;
-
     private boolean liked;
 
     private boolean saved;
@@ -76,6 +74,8 @@ public class PostVO implements Serializable {
      * User Avatar
      */
     private String creatorAvatar;
+
+    private int CommentCount;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

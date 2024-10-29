@@ -1,59 +1,35 @@
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 1', 'Post Content 1', 'image1.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('The Tranquil Beauty of Watercolor Landscapes', 'Watercolor landscapes capture serene scenes with soft edges and subtle blends. This technique brings out the tranquility of nature, from misty mountains to calm lakes. Have you tried watercolor landscapes? #Watercolor #Landscapes', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/watercolor.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 2', 'Post Content 2', 'image2.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Sculpting in Clay: From Idea to Reality', 'Sculpting is an art form that begins with a vision and evolves through the shaping of clay. Each piece carries its own story, molded by the artist’s hands. Share your latest clay creations and your inspiration behind them! #Sculpture #ClayArt', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/clay.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 3', 'Post Content 3', 'image3.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Abstract Art: Expressing Emotion through Colors and Shapes', 'Abstract art lets artists convey emotions without strict form, using colors, lines, and textures to communicate. What emotions do you aim to express in your abstract pieces? #AbstractArt #Expression', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/abstract.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 4', 'Post Content 4', 'image4.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Capturing Urban Life through Street Photography', 'Street photography brings cities to life, capturing the beauty in everyday scenes and people. It’s spontaneous, raw, and tells stories of urban landscapes. Do you have a favorite shot from your city? #StreetPhotography #CityLife', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/street.jpg', 'Photo');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 5', 'Post Content 5', 'image5.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Exploring the World of Digital Illustration', 'Digital art opens limitless possibilities, from fantasy landscapes to realistic portraits. What digital tools do you use, and how do they shape your art? Show us your latest digital pieces! #DigitalArt #Illustration', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/digital.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 6', 'Post Content 6', 'image6.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Art Nouveau: Celebrating Nature with Flowing Lines', 'Inspired by natural forms, Art Nouveau brings elegance to art through flowing lines and floral designs. Have you experimented with this style? #ArtNouveau #FloralDesign', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/lines.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 7', 'Post Content 7', 'image7.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('The Power of Monochrome Photography', 'Black-and-white photos can convey powerful contrasts and emotions. Stripping away color, monochrome photography highlights textures, light, and shadow. Share your favorite monochrome shots! #Monochrome #BlackAndWhite', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/monochrome.jpg', 'Photo');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 8', 'Post Content 8', 'image8.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Street Art: Colorful Expressions on City Walls', 'Street art transforms walls into vibrant canvases, reflecting culture, politics, and social issues. Do you have favorite street art in your city, or have you created some yourself? #StreetArt #UrbanExpression', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/citywalls.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 9', 'Post Content 9', 'image9.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Oil Painting: Rich Textures and Deep Colors', 'Oil paints allow artists to create vivid textures and layers, giving depth to the artwork. It’s a technique rich in tradition and full of potential. Post your recent oil paintings here! #OilPainting #ArtTechnique', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/oilpainting.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 10', 'Post Content 10', 'image10.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Life in Miniature: The Art of Tiny Worlds', 'Miniature art captures entire scenes in a tiny space, full of incredible detail. These pieces take patience and precision. Do you create miniatures? #MiniatureArt #TinyWorlds', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/tiny.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 11', 'Post Content 11', 'image11.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Ink and Wash: Combining Control and Flow', 'The art of ink and wash blends controlled lines with free-flowing ink washes. It’s a style full of character and contrast. Show us your recent ink and wash work! #InkArt #WashTechnique', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/ink.jpg', 'Painting');
 
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 12', 'Post Content 12', 'image12.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 13', 'Post Content 13', 'image13.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 14', 'Post Content 14', 'image14.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 15', 'Post Content 15', 'image15.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 16', 'Post Content 16', 'image16.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 17', 'Post Content 17', 'image17.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 18', 'Post Content 18', 'image18.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 19', 'Post Content 19', 'image19.jpg');
-
-INSERT INTO POTATO.Post (post_title, post_content, post_image)
-VALUES ('Post Title 20', 'Post Content 20', 'image20.jpg');
+INSERT INTO POTATO.Post (post_title, post_content, post_image, post_genre)
+VALUES ('Impressionism: Capturing Moments in Brushstrokes', 'Impressionism brings scenes to life with quick brushstrokes and vibrant colors, capturing the essence of the moment. Share your impressionist-inspired art and the scenes that inspire you! #Impressionism #Brushstrokes', 'https://fzqqq-test.oss-us-east-1.aliyuncs.com/impressionism.jpg', 'Painting');

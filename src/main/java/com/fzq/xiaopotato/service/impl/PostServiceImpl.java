@@ -70,6 +70,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PostcommentMapper postcommentMapper;
+
     @Override
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
         UserVO currentUser = userService.getCurrentUser(request);
@@ -187,7 +190,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setSaveCount(getSavedCount(idDTO));
                     postVO.setLiked(likesService.isLiked(idDTO, request));
                     postVO.setSaved(savesService.isSaved(idDTO, request));
-                    postVO.setCommentCount(0);
+                    postVO.setCommentCount(getCommentCountByPostId(idDTO.getId()));
 
                     // get creator's info
                     Long userId = userPostMapper.selectOne(
@@ -234,7 +237,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         postVO.setSaveCount(getSavedCount(idDTO));
         postVO.setLiked(likesService.isLiked(idDTO, request));
         postVO.setSaved(savesService.isSaved(idDTO, request));
-        postVO.setCommentCount(0);
+        postVO.setCommentCount(getCommentCountByPostId(idDTO.getId()));
         // get creator's info
         Long userId = userPostMapper.selectOne(
                 new QueryWrapper<UserPost>().eq("post_id", post.getId())
@@ -396,7 +399,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setSaveCount(getSavedCount(idDTO));
                     postVO.setLiked(likesService.isLiked(idDTO, request));
                     postVO.setSaved(savesService.isSaved(idDTO, request));
-                    postVO.setCommentCount(0);
+                    postVO.setCommentCount(getCommentCountByPostId(post.getId()));
                     // get creator's info
                     Long creatorId = userPostMapper.selectOne(
                             new QueryWrapper<UserPost>().eq("post_id", post.getId())
@@ -465,7 +468,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             postVO.setSaveCount(getSavedCount(idDTO));
             postVO.setLiked(likesService.isLiked(idDTO, request));
             postVO.setSaved(savesService.isSaved(idDTO, request));
-            postVO.setCommentCount(0);
+            postVO.setCommentCount(getCommentCountByPostId(post.getId()));
 
             // get creator's info
             Long creatorId = userPostMapper.selectOne(
@@ -519,7 +522,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             postVO.setSaveCount(getSavedCount(idDTO));
             postVO.setLiked(likesService.isLiked(idDTO, request));
             postVO.setSaved(savesService.isSaved(idDTO, request));
-            postVO.setCommentCount(0);
+            postVO.setCommentCount(getCommentCountByPostId(post.getId()));
 
             // get creator's info
             Long creatorId = userPostMapper.selectOne(
@@ -542,6 +545,13 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         postVOPage.setRecords(postVOList);
 
         return postVOPage;
+    }
+
+    private int getCommentCountByPostId(Long postId) {
+        if (postId == null) {
+            return 0;
+        }
+        return postcommentMapper.selectCount(new QueryWrapper<Postcomment>().eq("post_id", postId)).intValue();
     }
 
 
