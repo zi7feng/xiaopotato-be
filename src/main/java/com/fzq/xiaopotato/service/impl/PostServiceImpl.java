@@ -10,6 +10,7 @@ import com.fzq.xiaopotato.common.utils.UploadUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.*;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
+import com.fzq.xiaopotato.model.dto.common.PageDTO;
 import com.fzq.xiaopotato.model.dto.post.PostCreateDTO;
 import com.fzq.xiaopotato.model.dto.post.PostQueryDTO;
 import com.fzq.xiaopotato.model.dto.post.PostUpdateDTO;
@@ -434,6 +435,115 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         Long count = savesMapper.selectCount(new QueryWrapper<Saves>().eq("post_id", postId));
         return count != null ? count.intValue() : 0;
     }
+
+    @Override
+    public IPage<PostVO> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        List<Long> likedPostIds = likesMapper.selectList(new QueryWrapper<Likes>().eq("user_id", userId))
+                .stream()
+                .map(Likes::getPostId)
+                .collect(Collectors.toList());
+        if (likedPostIds.isEmpty()) {
+            // If there are no liked posts, return an empty page
+            return new Page<>();
+        }
+        Page<Post> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", likedPostIds);
+        IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
+        List<PostVO> postVOList = pageResult.getRecords().stream().map(post -> {
+            PostVO postVO = new PostVO();
+            BeanUtils.copyProperties(post, postVO);
+            IdDTO idDTO = new IdDTO();
+            idDTO.setId(post.getId());
+
+            postVO.setLikeCount(getLikedCount(idDTO));
+            postVO.setSaveCount(getSavedCount(idDTO));
+            postVO.setLiked(likesService.isLiked(idDTO, request));
+            postVO.setSaved(savesService.isSaved(idDTO, request));
+            postVO.setCommentCount(0);
+
+            // get creator's info
+            Long creatorId = userPostMapper.selectOne(
+                    new QueryWrapper<UserPost>().eq("post_id", post.getId())
+            ).getUserId();
+            if (creatorId != null) {
+                User userEntity = userMapper.selectById(creatorId);
+                if (userEntity != null) {
+                    postVO.setCreatorId(userEntity.getId());
+                    postVO.setCreatorFirstName(userEntity.getFirstName());
+                    postVO.setCreatorLastName(userEntity.getLastName());
+                    postVO.setCreatorAccount(userEntity.getUserAccount());
+                    postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                }
+            }
+            return postVO;
+        }).collect(Collectors.toList());
+
+        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        postVOPage.setRecords(postVOList);
+
+        return postVOPage;
+    }
+
+    @Override
+    public IPage<PostVO> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+        List<Long> savedPostIds = savesMapper.selectList(new QueryWrapper<Saves>().eq("user_id", userId))
+                .stream()
+                .map(Saves::getPostId)
+                .collect(Collectors.toList());
+        if (savedPostIds.isEmpty()) {
+            // If there are no saved posts, return an empty page
+            return new Page<>();
+        }
+        Page<Post> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+        QueryWrapper<Post> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("id", savedPostIds);
+        IPage<Post> pageResult = postMapper.selectPage(page, queryWrapper);
+        List<PostVO> postVOList = pageResult.getRecords().stream().map(post -> {
+            PostVO postVO = new PostVO();
+            BeanUtils.copyProperties(post, postVO);
+            IdDTO idDTO = new IdDTO();
+            idDTO.setId(post.getId());
+
+            postVO.setLikeCount(getLikedCount(idDTO));
+            postVO.setSaveCount(getSavedCount(idDTO));
+            postVO.setLiked(likesService.isLiked(idDTO, request));
+            postVO.setSaved(savesService.isSaved(idDTO, request));
+            postVO.setCommentCount(0);
+
+            // get creator's info
+            Long creatorId = userPostMapper.selectOne(
+                    new QueryWrapper<UserPost>().eq("post_id", post.getId())
+            ).getUserId();
+            if (creatorId != null) {
+                User userEntity = userMapper.selectById(creatorId);
+                if (userEntity != null) {
+                    postVO.setCreatorId(userEntity.getId());
+                    postVO.setCreatorFirstName(userEntity.getFirstName());
+                    postVO.setCreatorLastName(userEntity.getLastName());
+                    postVO.setCreatorAccount(userEntity.getUserAccount());
+                    postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                }
+            }
+            return postVO;
+        }).collect(Collectors.toList());
+
+        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), page.getTotal());
+        postVOPage.setRecords(postVOList);
+
+        return postVOPage;
+    }
+
 
 }
 
