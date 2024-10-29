@@ -202,7 +202,7 @@ public class PostController {
         return ResultUtils.success(result);
     }
 
-
+    @Operation(summary = "Get current user's liked posts by page")
     @GetMapping("/likes")
     public BaseResponse<IPage<PostVO>> listLikesByPage(PageDTO pageDTO, HttpServletRequest request) {
         if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
@@ -213,6 +213,7 @@ public class PostController {
         return ResultUtils.success(result);
     }
 
+    @Operation(summary = "Get current user's saved posts by page")
     @GetMapping("/saves")
     public BaseResponse<IPage<PostVO>> listSavesByPage(PageDTO pageDTO, HttpServletRequest request) {
         if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {

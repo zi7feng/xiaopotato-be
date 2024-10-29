@@ -219,7 +219,7 @@ public class UserController {
     }
 
 
-
+    @Operation(summary = "Get UserVO by id")
     @GetMapping("/selectById")
     public BaseResponse<UserVO> getUserById(IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
@@ -229,7 +229,7 @@ public class UserController {
 
     }
 
-
+    @Operation(summary = "Get Users by page")
     @GetMapping("/selectByPage")
     public BaseResponse<IPage<UserVO>> listUserByPage(UserQueryDTO userQueryDTO, HttpServletRequest request) {
         if (userQueryDTO == null) {
@@ -243,7 +243,7 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
-
+    @Operation(summary = "Get fans list of current user by page")
     @GetMapping("/fans")
     public BaseResponse<IPage<UserVO>> listFansByPage(PageDTO pageDTO, HttpServletRequest request) {
         if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
@@ -254,6 +254,7 @@ public class UserController {
         return ResultUtils.success(result);
     }
 
+    @Operation(summary = "Get current user's following list by page")
     @GetMapping("/follows")
     public BaseResponse<IPage<UserVO>> listFollowsByPage(PageDTO pageDTO, HttpServletRequest request) {
         if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
