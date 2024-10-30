@@ -73,6 +73,9 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
     @Autowired
     private PostcommentMapper postcommentMapper;
 
+    @Autowired
+    private UserfollowService userfollowService;
+
     @Override
     public Long postCreate(PostCreateDTO postCreateDTO, HttpServletRequest request) {
         UserVO currentUser = userService.getCurrentUser(request);
@@ -238,6 +241,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         postVO.setLiked(likesService.isLiked(idDTO, request));
         postVO.setSaved(savesService.isSaved(idDTO, request));
         postVO.setCommentCount(getCommentCountByPostId(idDTO.getId()));
+        postVO.setFollowed(userfollowService.isFollowedByUser(idDTO, request));
+
         // get creator's info
         Long userId = userPostMapper.selectOne(
                 new QueryWrapper<UserPost>().eq("post_id", post.getId())

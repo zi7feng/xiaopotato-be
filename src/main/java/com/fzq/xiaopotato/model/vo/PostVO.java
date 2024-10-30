@@ -53,6 +53,8 @@ public class PostVO implements Serializable {
 
     private boolean saved;
 
+    private boolean followed;
+
 
     /**
      * user info
