@@ -16,6 +16,9 @@ public class TagUtils {
      * @return List of tags
      */
     public static List<String> extractTags(String content) {
+        if (content == null) {
+            return new ArrayList<>();
+        }
         Set<String> tags = new HashSet<>();
 
         Matcher matcher = TAG_PATTERN.matcher(content);

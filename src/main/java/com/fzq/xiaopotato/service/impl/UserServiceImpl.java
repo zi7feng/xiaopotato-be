@@ -186,10 +186,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public int updateUser(UserUpdateDTO userUpdateDTO, UserVO currentUser, HttpServletRequest request) {
-        if (getCurrentUser(request) == null) {
+        UserVO user = getCurrentUser(request);
+        if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
-        Long id = userUpdateDTO.getId();
+        Long id = user.getId();
         if (id <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "Invalid ID.");
         }
@@ -199,9 +200,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (!isAdmin(currentUser) && !id.equals(currentUser.getId())) {
             throw new BusinessException(ErrorCode.NO_AUTH);
         }
-        User oldUser = this.getById(userUpdateDTO.getId());
+        User oldUser = this.getById(user.getId());
         if (oldUser == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot find user with id: " + userUpdateDTO.getId());
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Cannot find user with id: " + user.getId());
         }
 
         if (RegexValidator.isValidEmail(userUpdateDTO.getEmail())) {
