@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Component
@@ -25,6 +26,7 @@ public class JwtUtils {
                 .setSubject(user.getUserAccount())
                 .claim("id", user.getId())
                 .claim("role", user.getUserRole())
+                .claim("random", UUID.randomUUID().toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
@@ -54,6 +56,7 @@ public class JwtUtils {
 
     public boolean isTokenBlacklisted(String token) {
         String tokenKey = "token:blacklist:" + token;
-        return Boolean.TRUE.equals(redisTemplate.opsForValue().get(tokenKey));
+        boolean result = Boolean.TRUE.equals(redisTemplate.opsForValue().get(tokenKey));
+        return result;
     }
 }
