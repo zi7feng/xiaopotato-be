@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class JwtUtils {
     private static final String SECRET_KEY = "potatopotatopotatopotatopotatopotatopotatopotato";
 
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 1; // 1 hour
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 12; // 12 hour
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
