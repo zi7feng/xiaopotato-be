@@ -37,7 +37,7 @@ public class SocketIOUtils {
     public void onConnect(SocketIOClient client) {
         String token = client.getHandshakeData().getSingleUrlParam("token");
         if (token != null && token.startsWith("Bearer ")) {
-            token = token.substring(7);
+            token = token.substring(7).trim();
         }
         if (token != null) {
             Claims claims = jwtUtils.getClaimsFromToken(token);
