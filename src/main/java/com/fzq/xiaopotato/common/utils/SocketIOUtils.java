@@ -3,6 +3,7 @@ package com.fzq.xiaopotato.common.utils;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.annotation.OnConnect;
 import com.corundumstudio.socketio.annotation.OnDisconnect;
+import com.corundumstudio.socketio.annotation.OnEvent;
 import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.service.NotificationService;
 import io.jsonwebtoken.Claims;
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -127,6 +129,39 @@ public class SocketIOUtils {
             if (client != null) {
                 client.sendEvent("heartbeat", "A new notification is about to arrive!");
             }
+        }
+    }
+
+    private final Random random = new Random();
+
+    /**
+     * 处理前端消息并返回随机数
+     * @param client Socket客户端
+     * @param data 前端发送的数据
+     */
+    @OnEvent("message")
+    public void handleMessage(SocketIOClient client, String data) {
+        try {
+            log.info("Received message from client: {}", data);
+
+            // 生成1到100之间的随机数
+            int randomNumber = random.nextInt(100) + 1;
+
+            // 构建响应对象
+            Map<String, Object> response = Map.of(
+                    "randomNumber", randomNumber,
+                    "receivedMessage", data,
+                    "timestamp", System.currentTimeMillis()
+            );
+
+            // 发送随机数回客户端
+            client.sendEvent("randomResponse", response);
+            log.info("Sent random number {} to client", randomNumber);
+
+        } catch (Exception e) {
+            log.error("Error handling message: {}", e.getMessage(), e);
+            // 发送错误响应
+            client.sendEvent("error", "Failed to process message: " + e.getMessage());
         }
     }
 
