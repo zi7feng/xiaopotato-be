@@ -134,6 +134,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         String title = postQueryDTO.getPostTitle();
         String content = postQueryDTO.getPostContent();
         String genre = postQueryDTO.getPostGenre();
+        String sort = postQueryDTO.getSort();
 
         if (!StringUtils.isEmpty(title)) {
             queryWrapper.like("post_title", title);
@@ -144,44 +145,55 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (!StringUtils.isEmpty(genre) && !genre.equalsIgnoreCase("all")) {
             queryWrapper.eq("post_genre", genre);
         }
-        List<Post> allPosts = this.list(queryWrapper);
-        // get recommended post list from redis
-        String redisKey = "user_recommendation:" + user.getId();
-        List<Object> recommendedPostIdsObj = redisTemplate.opsForList().range(redisKey, 0, -1);
-
-        List<Long> recommendedPostIds;
-        if (recommendedPostIdsObj == null || recommendedPostIdsObj.isEmpty()) {
-            recommendedPostIds = Collections.emptyList();
-        } else {
-            recommendedPostIds = recommendedPostIdsObj.stream()
-                    .flatMap(obj -> ((List<?>) obj).stream())
-                    .map(id -> (Long) id)
-                    .collect(Collectors.toList());
+        List<Post> allPosts;
+        if (!StringUtils.isEmpty(sort)) {
+            // 按照 updateTime 排序
+            if (sort.equalsIgnoreCase("asc")) {
+                queryWrapper.orderByAsc("update_time");
+            } else if (sort.equalsIgnoreCase("desc")) {
+                queryWrapper.orderByDesc("update_time");
+            }
+            // 查询所有符合条件的帖子列表
+            allPosts = this.list(queryWrapper);
         }
-        List<Post> sortedPosts;
-        if (recommendedPostIds.isEmpty()) {
-            sortedPosts = allPosts; // no sorting, just use the original list
-        } else {
-            sortedPosts = allPosts.stream()
-                    .sorted((post1, post2) -> {
-                        int index1 = recommendedPostIds.indexOf(post1.getId());
-                        int index2 = recommendedPostIds.indexOf(post2.getId());
+        else {
+            allPosts = this.list(queryWrapper);
+            // get recommended post list from redis
+            String redisKey = "user_recommendation:" + user.getId();
+            List<Object> recommendedPostIdsObj = redisTemplate.opsForList().range(redisKey, 0, -1);
 
-                        if (index1 == -1 && index2 != -1) return 1;
-                        if (index1 != -1 && index2 == -1) return -1;
-                        return Integer.compare(index1, index2);
-                    })
-                    .collect(Collectors.toList());
+            List<Long> recommendedPostIds;
+            if (recommendedPostIdsObj == null || recommendedPostIdsObj.isEmpty()) {
+                recommendedPostIds = Collections.emptyList();
+            } else {
+                recommendedPostIds = recommendedPostIdsObj.stream()
+                        .flatMap(obj -> ((List<?>) obj).stream())
+                        .map(id -> (Long) id)
+                        .collect(Collectors.toList());
+            }
+
+            if (!recommendedPostIds.isEmpty()) {
+                allPosts = allPosts.stream()
+                        .sorted((post1, post2) -> {
+                            int index1 = recommendedPostIds.indexOf(post1.getId());
+                            int index2 = recommendedPostIds.indexOf(post2.getId());
+
+                            if (index1 == -1 && index2 != -1) return 1;
+                            if (index1 != -1 && index2 == -1) return -1;
+                            return Integer.compare(index1, index2);
+                        })
+                        .collect(Collectors.toList());
+            }
         }
 
 
         int currentPage = postQueryDTO.getCurrentPage();
         int pageSize = postQueryDTO.getPageSize();
         int start = (currentPage - 1) * pageSize;
-        int end = Math.min(start + pageSize, sortedPosts.size());
-        List<Post> paginatedPosts = sortedPosts.subList(start, end);
+        int end = Math.min(start + pageSize, allPosts.size());
+        List<Post> paginatedPosts = allPosts.subList(start, end);
 
-        Page<Post> pageResult = new Page<>(currentPage, pageSize, sortedPosts.size());
+        Page<Post> pageResult = new Page<>(currentPage, pageSize, allPosts.size());
         pageResult.setRecords(paginatedPosts);
 
         List<PostVO> postVOList = pageResult.getRecords().stream().map(
@@ -214,7 +226,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     return postVO;
                 }
         ).collect(Collectors.toList());
-        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), sortedPosts.size());
+        Page<PostVO> postVOPage = new Page<>(page.getCurrent(), page.getSize(), allPosts.size());
         postVOPage.setRecords(postVOList);
 
         return postVOPage;
