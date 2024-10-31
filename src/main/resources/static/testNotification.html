@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Test</title>
+    <!-- Updated to Socket.IO v2.x client to match server -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.5.0/socket.io.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .connected {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .notification-item {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .notification-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .timestamp {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #connection-status {
+            margin-bottom: 20px;
+        }
+
+        #debug-log {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.9em;
+        }
+
+        .debug-entry {
+            margin: 5px 0;
+            font-family: monospace;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+<h1>Notification Test</h1>
+
+<div id="connection-status" class="status disconnected">
+    Status: Disconnected
+</div>
+
+<div>
+    <button id="connect-btn">Connect to Notification Server</button>
+    <button id="disconnect-btn" disabled>Disconnect</button>
+    <button id="clear-btn">Clear Notifications</button>
+</div>
+
+<div id="notifications">
+    <h3>Notifications:</h3>
+    <ul id="notification-list" style="list-style: none; padding: 0;"></ul>
+</div>
+
+<div id="debug-section">
+    <h3>Debug Log:</h3>
+    <div id="debug-log"></div>
+</div>
+
+<script>
+    const socketUrl = 'http://localhost:8081';
+    const jwtToken = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWQiOjIsInJvbGUiOiJ1c2VyIiwicmFuZG9tIjoiMzBhNjU0MzUtMWY1Ni00MDBmLTk3YmYtOWQ3MjYzMzg2M2ZmIiwiaWF0IjoxNzMwMzM3NDk3LCJleHAiOjE3MzAzODA2OTd9.awEjgEmkLHm8nxvGiQYVgevLuc6ujkdpQDfbdAzdMyA';
+
+    let socket;
+    let reconnectAttempts = 0;
+    const MAX_RECONNECT_ATTEMPTS = 5;
+    const RECONNECT_DELAY = 1000;
+
+    function addDebugLog(message, type = 'info') {
+        const debugLog = document.getElementById('debug-log');
+        const entry = document.createElement('div');
+        entry.className = 'debug-entry';
+        const timestamp = new Date().toLocaleTimeString();
+
+        // Add emoji indicators for different message types
+        const emoji = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+        entry.textContent = `${emoji} [${timestamp}] ${message}`;
+
+        if (type === 'error') {
+            entry.style.color = '#dc3545';
+        } else if (type === 'success') {
+            entry.style.color = '#28a745';
+        }
+
+        debugLog.appendChild(entry);
+        debugLog.scrollTop = debugLog.scrollHeight;
+
+        // Keep only the last 100 messages
+        while (debugLog.children.length > 100) {
+            debugLog.removeChild(debugLog.firstChild);
+        }
+    }
+
+    function updateConnectionStatus(connected) {
+        const statusDiv = document.getElementById('connection-status');
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+
+        if (connected) {
+            statusDiv.className = 'status connected';
+            statusDiv.textContent = 'Status: Connected';
+            connectBtn.disabled = true;
+            disconnectBtn.disabled = false;
+            reconnectAttempts = 0; // Reset reconnection attempts on successful connection
+        } else {
+            statusDiv.className = 'status disconnected';
+            statusDiv.textContent = 'Status: Disconnected';
+            connectBtn.disabled = false;
+            disconnectBtn.disabled = true;
+        }
+    }
+
+    function connectToServer() {
+        if (socket) {
+            addDebugLog('Cleaning up existing connection...');
+            socket.close();
+            socket = null;
+        }
+
+        addDebugLog('Attempting to connect to server...');
+
+        try {
+            // Initialize socket with Socket.IO v2.x options
+            socket = io(socketUrl, {
+                query: { token: jwtToken },
+                reconnection: false, // We'll handle reconnection manually
+                transports: ['websocket']
+            });
+
+            socket.on('connect', () => {
+                addDebugLog('Connected to server successfully!', 'success');
+                updateConnectionStatus(true);
+            });
+
+            socket.on('disconnect', (reason) => {
+                addDebugLog(`Disconnected from server. Reason: ${reason}`, 'error');
+                updateConnectionStatus(false);
+
+                // Attempt reconnection if not manually disconnected
+                if (reason !== 'io client disconnect') {
+                    handleReconnection();
+                }
+            });
+
+            socket.on('connect_error', (error) => {
+                addDebugLog(`Connection error: ${error.message}`, 'error');
+                updateConnectionStatus(false);
+                handleReconnection();
+            });
+
+            socket.on('error', (error) => {
+                addDebugLog(`Socket error: ${error.message}`, 'error');
+            });
+
+            socket.on('heartbeat', (message) => {
+                addDebugLog(`💓 Heartbeat received: ${message}`);
+            });
+
+            socket.on('notification', (notification) => {
+                addDebugLog(`📬 New notification received`);
+                displayNotification(notification);
+            });
+
+        } catch (error) {
+            addDebugLog(`Failed to initialize socket: ${error.message}`, 'error');
+        }
+    }
+
+    function handleReconnection() {
+        if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
+            reconnectAttempts++;
+            const delay = RECONNECT_DELAY * reconnectAttempts;
+            addDebugLog(`Attempting to reconnect (${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS}) in ${delay/1000} seconds...`);
+
+            setTimeout(() => {
+                connectToServer();
+            }, delay);
+        } else {
+            addDebugLog('Maximum reconnection attempts reached. Please try connecting manually.', 'error');
+        }
+    }
+
+    function disconnectFromServer() {
+        if (socket) {
+            socket.close();
+            addDebugLog('Manually disconnected from server');
+        }
+    }
+
+    function displayNotification(notification) {
+        try {
+            const notificationList = document.getElementById('notification-list');
+            const listItem = document.createElement('li');
+            listItem.className = 'notification-item';
+
+            const timestamp = notification.timestamp
+                ? new Date(notification.timestamp).toLocaleString()
+                : new Date().toLocaleString();
+
+            listItem.innerHTML = `
+                <div class="notification-content">
+                    <strong>Type:</strong> ${notification.notificationType || 'N/A'}<br>
+                    <strong>From:</strong> ${notification.firstName || ''} ${notification.lastName || ''}<br>
+                    <strong>Account:</strong> ${notification.account || 'N/A'}<br>
+                    <div class="timestamp">📅 ${timestamp}</div>
+                </div>
+            `;
+
+            notificationList.insertBefore(listItem, notificationList.firstChild);
+            addDebugLog('Notification displayed successfully', 'success');
+        } catch (error) {
+            addDebugLog(`Error displaying notification: ${error.message}`, 'error');
+            console.error('Notification data:', notification);
+            console.error('Error:', error);
+        }
+    }
+
+    function clearNotifications() {
+        const notificationList = document.getElementById('notification-list');
+        const count = notificationList.children.length;
+        notificationList.innerHTML = '';
+        addDebugLog(`Cleared ${count} notifications`);
+    }
+
+    // Event listeners
+    document.getElementById('connect-btn').addEventListener('click', connectToServer);
+    document.getElementById('disconnect-btn').addEventListener('click', disconnectFromServer);
+    document.getElementById('clear-btn').addEventListener('click', clearNotifications);
+</script>
+</body>
+</html>

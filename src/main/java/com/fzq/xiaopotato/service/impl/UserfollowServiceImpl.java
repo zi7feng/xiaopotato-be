@@ -3,17 +3,24 @@ package com.fzq.xiaopotato.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.common.NotificationType;
+import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.entity.Likes;
 import com.fzq.xiaopotato.model.entity.Userfollow;
+import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
 import com.fzq.xiaopotato.service.UserfollowService;
 import com.fzq.xiaopotato.mapper.UserfollowMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
 * @author zfeng
@@ -32,6 +39,9 @@ public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfol
     @Autowired
     private UserfollowMapper userfollowMapper;
 
+    @Autowired
+    private SocketIOUtils socketIOUtils;
+
     @Override
     public boolean followByUserId(IdDTO idDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
@@ -46,6 +56,7 @@ public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfol
             userfollow.setFollowerId(followerId);
             userfollow.setFollowedId(followedId);
             userfollowMapper.insert(userfollow);
+            sendFollowNotification(user, followedId);
             return true;
         } else {
             QueryWrapper<Userfollow> queryWrapper = new QueryWrapper<>();
@@ -68,6 +79,29 @@ public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfol
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         return isFollowed(user.getId(), idDTO.getId());
+    }
+
+    /**
+     * 发送关注通知
+     */
+    private void sendFollowNotification(UserVO follower, Long followedId) {
+        NotificationVO notification = new NotificationVO();
+
+        // 手动设置字段值
+        notification.setFollowerId(follower.getId());
+        notification.setFirstName(follower.getFirstName());
+        notification.setLastName(follower.getLastName());
+        notification.setAccount(follower.getUserAccount());
+        notification.setAvatar(follower.getUserAvatar());
+        notification.setNotificationType("follow");
+
+        // 设置时间戳为字符串格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        notification.setTimestamp(LocalDateTime.now().format(formatter));
+
+        socketIOUtils.sendHeartbeat(followedId);
+        // 发送通知
+        socketIOUtils.sendNotification(followedId, notification);
     }
 }
 
