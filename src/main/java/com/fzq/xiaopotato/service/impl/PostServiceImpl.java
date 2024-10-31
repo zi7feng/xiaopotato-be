@@ -141,9 +141,10 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (!StringUtils.isEmpty(content)) {
             queryWrapper.like("post_content", content);
         }
-        if (!StringUtils.isEmpty(genre)) {
+        if (!StringUtils.isEmpty(genre) && !genre.equalsIgnoreCase("all")) {
             queryWrapper.eq("post_genre", genre);
-        }        List<Post> allPosts = this.list(queryWrapper);
+        }
+        List<Post> allPosts = this.list(queryWrapper);
         // get recommended post list from redis
         String redisKey = "user_recommendation:" + user.getId();
         List<Object> recommendedPostIdsObj = redisTemplate.opsForList().range(redisKey, 0, -1);
@@ -386,7 +387,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (!StringUtils.isEmpty(content)) {
             queryWrapper.like("post_content", content);
         }
-        if (!StringUtils.isEmpty(genre)) {
+        if (!StringUtils.isEmpty(genre) && !genre.equalsIgnoreCase("all")) {
             queryWrapper.eq("post_genre", genre);
         }
 
