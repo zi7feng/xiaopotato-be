@@ -33,19 +33,6 @@ public class PostController {
     private PostService postService;
 
     @Operation(summary = "Create a new post")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post created successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": 123,
-                      "message": "ok",
-                      "description": "Post created successfully."
-                    }
-                """)))
-    })
     @PostMapping("/create")
     public BaseResponse<Long> createPost(@RequestBody PostCreateDTO postCreateDTO, HttpServletRequest request) {
         if (postCreateDTO == null) {
@@ -55,30 +42,6 @@ public class PostController {
     }
 
     @Operation(summary = "List posts with pagination")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Posts listed successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": {
-                        "current": 1,
-                        "size": 10,
-                        "total": 100,
-                        "records": [
-                          {
-                            "id": 123,
-                            "postTitle": "Sample Post",
-                            "postContent": "This is a sample post content."
-                          }
-                        ]
-                      },
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @GetMapping("/selectByPage")
     public BaseResponse<IPage<PostVO>> listPostByPage(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         if (postQueryDTO == null) {
@@ -93,23 +56,6 @@ public class PostController {
     }
 
     @Operation(summary = "Get post details by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post retrieved successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": {
-                        "id": 123,
-                        "postTitle": "Sample Post",
-                        "postContent": "This is a sample post content."
-                      },
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @GetMapping("/selectById")
     public BaseResponse<PostVO> getPostById(IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
@@ -119,19 +65,6 @@ public class PostController {
     }
 
     @Operation(summary = "Update a post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post updated successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": true,
-                      "message": "ok",
-                      "description": "Post updated successfully."
-                    }
-                """)))
-    })
     @PostMapping("/update")
     public BaseResponse<Boolean> updatePostById(@RequestBody PostUpdateDTO postUpdateDTO, HttpServletRequest request) {
 
@@ -143,19 +76,6 @@ public class PostController {
     }
 
     @Operation(summary = "Delete a post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Post deleted successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": true,
-                      "message": "ok",
-                      "description": "Post deleted successfully."
-                    }
-                """)))
-    })
     @PostMapping("/delete")
     public BaseResponse<Boolean> deletePostById(@RequestBody IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
@@ -165,30 +85,6 @@ public class PostController {
     }
 
     @Operation(summary = "List posts by user ID with pagination")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User's posts listed successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": {
-                        "current": 1,
-                        "size": 10,
-                        "total": 50,
-                        "records": [
-                          {
-                            "id": 123,
-                            "postTitle": "User Post",
-                            "postContent": "This is a user-specific post content."
-                          }
-                        ]
-                      },
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @GetMapping("/selectByUserId")
     public BaseResponse<IPage<PostVO>> listPostByUserId(PostQueryDTO postQueryDTO, HttpServletRequest request) {
         if (postQueryDTO == null) {

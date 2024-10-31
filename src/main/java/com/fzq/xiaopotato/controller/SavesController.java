@@ -27,19 +27,6 @@ public class SavesController {
     private UserService userService;
 
     @Operation(summary = "Save or Unsave a Post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully saved or unsaved the post",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "code": 200,
-                  "data": true,
-                  "message": "ok",
-                  "description": "Indicates whether the post is now saved (true) or unsaved (false)."
-                }
-            """)))
-    })
     @PostMapping("/saveByPostId")
     public BaseResponse<Boolean> saveByPostId(@RequestBody IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
@@ -50,19 +37,6 @@ public class SavesController {
 
 
     @Operation(summary = "Check if the current user saved a Post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Check completed successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": false,
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @GetMapping("/isSaved")
     public BaseResponse<Boolean> isSaved(IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {

@@ -1,19 +1,50 @@
 version: 2.1
 
+orbs:
+  eb: circleci/aws-elastic-beanstalk@2.0.1
+
 jobs:
   build-and-test:
+    description: "Setup Spring boot application and run tests"
     docker:
       - image: cimg/openjdk:19.0.1
     steps:
       - checkout
       - run:
           name: Build
-          command: mvn -B clean package
+          command: mvn -B -DskipTests clean package
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
       - run:
           name: Test
           command: mvn test
 
+  deploy:
+    docker:
+      - image: "cimg/base:stable"
+    description: "Deploying updates to Elastic Beanstalk"
+    steps:
+      - attach_workspace:
+          at: .
+      - eb/setup
+      - run:
+          command: |
+            eb init RandAPI -r $AWS_DEFAULT_REGION -p corretto-17
+            echo "deploy:
+                    artifact: target/RandAPI-0.0.1-SNAPSHOT.jar" >> .elasticbeanstalk/config.yml
+            eb deploy springboot-env
+
 workflows:
-  build-and-test:
+  build-and-deploy:
     jobs:
       - build-and-test
+      - deploy:
+          requires:
+            - build-and-test
+          filters:
+            branches:
+              only: main
+          context: aws-credentials

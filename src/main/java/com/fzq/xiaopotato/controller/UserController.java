@@ -49,19 +49,6 @@ public class UserController {
      * @return BaseResponse<Long>
      */
     @Operation(summary = "Register a new user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully registered",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": 123,
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @PostMapping("/register")
     public BaseResponse<Long> userRegister(@RequestBody UserRegisterDTO userRegisterDTO) {
         if (userRegisterDTO == null) {
@@ -72,36 +59,6 @@ public class UserController {
     }
 
     @Operation(summary = "User login")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully logged in",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "code": 200,
-                  "data": {
-                    "user": {
-                      "id": 1,
-                      "firstName": "John",
-                      "lastName": "Doe",
-                      "userAccount": "John",
-                      "userAvatar": "string",
-                      "email": "string@abc.com",
-                      "phone": "123-123-1234",
-                      "gender": "string",
-                      "description": "#tag",
-                      "followCount": 3,
-                      "fansCount": 1,
-                      "userRole": "user",
-                      "status": 0
-                    },
-                    "token": "eyJiJ1c2VyIiwiaWF0IjoxNzI5ODY3OTg3LCJleHAiOjE3M"
-                  },
-                  "message": "ok",
-                  "description": ""
-                }
-            """)))
-    })
     @PostMapping("/login")
     public BaseResponse<Map<String, Object>> userLogin(@RequestBody UserLoginDTO userLoginDTO) {
         if (userLoginDTO == null) {
@@ -117,19 +74,6 @@ public class UserController {
     }
 
     @Operation(summary = "Logout the current user")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully logged out",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": true,
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @SecurityRequirement(name = "bearerAuth")
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
@@ -138,36 +82,6 @@ public class UserController {
     }
 
     @Operation(summary = "Get current logged-in user details and refresh token")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved user details and refreshed token",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "code": 200,
-                  "data": {
-                    "user": {
-                      "id": 1,
-                      "firstName": "John",
-                      "lastName": "Doe",
-                      "userAccount": "John",
-                      "userAvatar": "string",
-                      "email": "string@abc.com",
-                      "phone": "123-123-1234",
-                      "gender": "string",
-                      "description": "#tag",
-                      "followCount": 3,
-                      "fansCount": 1,
-                      "userRole": "user",
-                      "status": 0
-                    },
-                    "token": "ey9x7IXinZ8pEZ-kD8X4YiYTiuTawWuuKlARlvWY"
-                  },
-                  "message": "ok",
-                  "description": ""
-                }
-            """)))
-    })
     @GetMapping("/current")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Map<String, Object>> getCurrentUser(HttpServletRequest request) {
@@ -188,19 +102,6 @@ public class UserController {
     }
 
     @Operation(summary = "Update user details")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully updated user",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": true,
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @PostMapping("/update")
     @SecurityRequirement(name = "bearerAuth")
     public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateDTO userUpdateDTO, HttpServletRequest request) {
