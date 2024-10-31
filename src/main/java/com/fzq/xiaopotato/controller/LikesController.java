@@ -27,19 +27,6 @@ public class LikesController {
     private UserService userService;
 
     @Operation(summary = "Like or Unlike a Post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully liked or unliked the post",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                {
-                  "code": 200,
-                  "data": true,
-                  "message": "ok",
-                  "description": "Indicates whether the post is now liked (true) or unliked (false)."
-                }
-            """)))
-    })
     @PostMapping("/likeByPostId")
     public BaseResponse<Boolean> likeByPostId(@RequestBody IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
@@ -50,19 +37,6 @@ public class LikesController {
 
 
     @Operation(summary = "Check if the current user liked a Post by ID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Check completed successfully",
-                    content = @Content(mediaType = "application/json",
-                            schema = @Schema(implementation = BaseResponse.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "code": 200,
-                      "data": false,
-                      "message": "ok",
-                      "description": ""
-                    }
-                """)))
-    })
     @GetMapping("/isLiked")
     public BaseResponse<Boolean> isLiked(IdDTO idDTO, HttpServletRequest request) {
         if (idDTO == null) {
