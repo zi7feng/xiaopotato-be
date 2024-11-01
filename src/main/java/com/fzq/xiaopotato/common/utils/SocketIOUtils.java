@@ -56,6 +56,8 @@ public class SocketIOUtils {
 
             // 更新所有通知为已读状态
             notificationService.markNotificationsAsRead(userId);
+            log.info("Client connected: {}", client.getSessionId());
+
         }
     }
 
@@ -139,8 +141,8 @@ public class SocketIOUtils {
      * @param client Socket客户端
      * @param data 前端发送的数据
      */
-    @OnEvent("message")
     public void handleMessage(SocketIOClient client, String data) {
+        log.info("Received message from client: {}", data);
         try {
             log.info("Received message from client: {}", data);
 

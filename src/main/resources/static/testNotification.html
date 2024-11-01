@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notification Test</title>
-    <!-- Updated to Socket.IO v2.x client to match server -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.5.0/socket.io.js"></script>
     <style>
         body {
@@ -95,6 +94,31 @@
             font-family: monospace;
             line-height: 1.4;
         }
+
+        /* 新添加的样式 */
+        .message-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .message-input {
+            padding: 8px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+
+        .random-result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -110,6 +134,14 @@
     <button id="clear-btn">Clear Notifications</button>
 </div>
 
+<!-- 新添加的消息发送部分 -->
+<div class="message-section">
+    <h3>Send Message</h3>
+    <input type="text" id="message-input" class="message-input" placeholder="Enter your message">
+    <button id="send-message-btn" disabled>Send Message</button>
+    <div id="random-result" class="random-result"></div>
+</div>
+
 <div id="notifications">
     <h3>Notifications:</h3>
     <ul id="notification-list" style="list-style: none; padding: 0;"></ul>
@@ -122,7 +154,7 @@
 
 <script>
     const socketUrl = 'http://localhost:8081';
-    const jwtToken = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWQiOjIsInJvbGUiOiJ1c2VyIiwicmFuZG9tIjoiMzBhNjU0MzUtMWY1Ni00MDBmLTk3YmYtOWQ3MjYzMzg2M2ZmIiwiaWF0IjoxNzMwMzM3NDk3LCJleHAiOjE3MzAzODA2OTd9.awEjgEmkLHm8nxvGiQYVgevLuc6ujkdpQDfbdAzdMyA';
+    const jwtToken = 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0IiwiaWQiOjIsInJvbGUiOiJ1c2VyIiwicmFuZG9tIjoiMGRkYjY3MTUtOTM4NC00MTlkLWI2YTEtYzQzZDU5NWI5MGJhIiwiaWF0IjoxNzMwNDIyNzU5LCJleHAiOjE3MzA0NjU5NTl9.sUayn4BIM9LvkcnGm38GCgem2RxRS-MZKU2SFD3AduU';
 
     let socket;
     let reconnectAttempts = 0;
@@ -135,7 +167,6 @@
         entry.className = 'debug-entry';
         const timestamp = new Date().toLocaleTimeString();
 
-        // Add emoji indicators for different message types
         const emoji = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
         entry.textContent = `${emoji} [${timestamp}] ${message}`;
 
@@ -148,7 +179,6 @@
         debugLog.appendChild(entry);
         debugLog.scrollTop = debugLog.scrollHeight;
 
-        // Keep only the last 100 messages
         while (debugLog.children.length > 100) {
             debugLog.removeChild(debugLog.firstChild);
         }
@@ -158,18 +188,21 @@
         const statusDiv = document.getElementById('connection-status');
         const connectBtn = document.getElementById('connect-btn');
         const disconnectBtn = document.getElementById('disconnect-btn');
+        const sendMessageBtn = document.getElementById('send-message-btn');
 
         if (connected) {
             statusDiv.className = 'status connected';
             statusDiv.textContent = 'Status: Connected';
             connectBtn.disabled = true;
             disconnectBtn.disabled = false;
-            reconnectAttempts = 0; // Reset reconnection attempts on successful connection
+            sendMessageBtn.disabled = false;  // 启用发送消息按钮
+            reconnectAttempts = 0;
         } else {
             statusDiv.className = 'status disconnected';
             statusDiv.textContent = 'Status: Disconnected';
             connectBtn.disabled = false;
             disconnectBtn.disabled = true;
+            sendMessageBtn.disabled = true;  // 禁用发送消息按钮
         }
     }
 
@@ -183,10 +216,9 @@
         addDebugLog('Attempting to connect to server...');
 
         try {
-            // Initialize socket with Socket.IO v2.x options
             socket = io(socketUrl, {
                 query: { token: jwtToken },
-                reconnection: false, // We'll handle reconnection manually
+                reconnection: false,
                 transports: ['websocket']
             });
 
@@ -199,7 +231,6 @@
                 addDebugLog(`Disconnected from server. Reason: ${reason}`, 'error');
                 updateConnectionStatus(false);
 
-                // Attempt reconnection if not manually disconnected
                 if (reason !== 'io client disconnect') {
                     handleReconnection();
                 }
@@ -224,9 +255,26 @@
                 displayNotification(notification);
             });
 
+            // 新添加的随机数响应处理
+            socket.on('randomResponse', (response) => {
+                addDebugLog(`🎲 Received random number response`);
+                displayRandomResponse(response);
+            });
+
         } catch (error) {
             addDebugLog(`Failed to initialize socket: ${error.message}`, 'error');
         }
+    }
+
+    // 新添加的显示随机数响应函数
+    function displayRandomResponse(response) {
+        const resultDiv = document.getElementById('random-result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <strong>Random Number:</strong> ${response.randomNumber}<br>
+            <strong>Your Message:</strong> ${response.receivedMessage}<br>
+            <strong>Timestamp:</strong> ${new Date(response.timestamp).toLocaleString()}
+        `;
     }
 
     function handleReconnection() {
@@ -285,10 +333,32 @@
         addDebugLog(`Cleared ${count} notifications`);
     }
 
+    // 新添加的发送消息函数
+    function sendMessage() {
+        const messageInput = document.getElementById('message-input');
+        const message = messageInput.value.trim();
+
+        if (message && socket && socket.connected) {
+            addDebugLog(`Sending message: ${message}`);
+            socket.emit('message', message);
+            messageInput.value = ''; // 清空输入框
+        } else {
+            addDebugLog('Cannot send message: Either message is empty or not connected', 'error');
+        }
+    }
+
     // Event listeners
     document.getElementById('connect-btn').addEventListener('click', connectToServer);
     document.getElementById('disconnect-btn').addEventListener('click', disconnectFromServer);
     document.getElementById('clear-btn').addEventListener('click', clearNotifications);
+    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
+
+    // 添加输入框回车键发送功能
+    document.getElementById('message-input').addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
 </script>
 </body>
 </html>

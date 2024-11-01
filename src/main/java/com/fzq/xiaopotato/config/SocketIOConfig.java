@@ -27,6 +27,9 @@ public class SocketIOConfig {
         // 注册事件监听器
         server.addConnectListener(socketIOUtils::onConnect);
         server.addDisconnectListener(socketIOUtils::onDisconnect);
+        server.addEventListener("message", String.class, (client, data, ackSender) -> {
+            socketIOUtils.handleMessage(client, data);
+        });
 
         return server;
     }
