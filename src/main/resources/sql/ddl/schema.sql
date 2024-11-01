@@ -1,6 +1,22 @@
 CREATE DATABASE IF NOT EXISTS POTATO;
 
 USE POTATO;
+
+# SET FOREIGN_KEY_CHECKS = 0;
+#
+# TRUNCATE TABLE UserPost;
+# TRUNCATE TABLE Posttag;
+# TRUNCATE TABLE Usertag;
+# TRUNCATE TABLE Likes;
+# TRUNCATE TABLE Saves;
+# TRUNCATE TABLE Userfollow;
+# TRUNCATE TABLE Postcomment;
+# TRUNCATE TABLE Comment;
+# TRUNCATE TABLE Post;
+# TRUNCATE TABLE Tag;
+# TRUNCATE TABLE User;
+#
+# SET FOREIGN_KEY_CHECKS = 1;
 # DROP table POTATO.User;
 
 CREATE TABLE IF NOT EXISTS POTATO.User
@@ -131,4 +147,19 @@ CREATE TABLE Postcomment (
     FOREIGN KEY (comment_id) REFERENCES Comment(comment_id) ON DELETE CASCADE,
     FOREIGN KEY (post_id) REFERENCES Post(id) ON DELETE CASCADE,
     UNIQUE (comment_id, post_id)
+);
+
+
+CREATE TABLE Notification (
+                              id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                              user_id BIGINT NOT NULL,
+                              follower_id BIGINT,
+                              first_name VARCHAR(255),
+                              last_name VARCHAR(255),
+                              account VARCHAR(255),
+                              avatar VARCHAR(255),
+                              notification_type VARCHAR(50),
+                              create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
+                              is_read TINYINT DEFAULT 0,
+                              FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
 );
