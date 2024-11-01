@@ -2,6 +2,7 @@ package com.fzq.xiaopotato.config;
 
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
+import com.corundumstudio.socketio.Transport;
 import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,7 @@ public class SocketIOConfig {
         config.setHostname("localhost");
         config.setPort(8081);
         config.setOrigin("*");
-        config.setTransports(com.corundumstudio.socketio.Transport.WEBSOCKET);
+        config.setTransports(com.corundumstudio.socketio.Transport.WEBSOCKET, Transport.POLLING);
 
         SocketIOServer server = new SocketIOServer(config);
 
