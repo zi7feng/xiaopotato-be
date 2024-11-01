@@ -3,6 +3,7 @@ package com.fzq.xiaopotato.config;
 import com.corundumstudio.socketio.Configuration;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.Transport;
+import com.corundumstudio.socketio.annotation.SpringAnnotationScanner;
 import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -28,5 +29,10 @@ public class SocketIOConfig {
         server.addDisconnectListener(socketIOUtils::onDisconnect);
 
         return server;
+    }
+
+    @Bean
+    public SpringAnnotationScanner springAnnotationScanner(SocketIOServer socketIOServer) {
+        return new SpringAnnotationScanner(socketIOServer);
     }
 }
