@@ -297,8 +297,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             throw new BusinessException(ErrorCode.NO_AUTH, "Not the owner of the post.");
         }
 
-        // delete old picture
-        if (post.getPostImage() != null) {
+        // delete old picture if user update the image url
+        if (post.getPostImage() != null && post.getPostImage().equals(postUpdateDTO.getPostImage())) {
             String oldImageUrl = post.getPostImage();
             UploadUtils.deleteImage(oldImageUrl);
         }
