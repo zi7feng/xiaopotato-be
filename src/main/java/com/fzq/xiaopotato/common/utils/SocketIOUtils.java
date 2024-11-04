@@ -13,6 +13,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -38,6 +40,8 @@ public class SocketIOUtils {
 
     public void onConnect(SocketIOClient client) {
         String token = client.getHandshakeData().getSingleUrlParam("token");
+//        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
+
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7).trim();
         }
@@ -63,6 +67,8 @@ public class SocketIOUtils {
 
 
     public void onDisconnect(SocketIOClient client) {
+//        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
+
         String token = client.getHandshakeData().getSingleUrlParam("token");
         if (token != null) {
             Claims claims = jwtUtils.getClaimsFromToken(token);

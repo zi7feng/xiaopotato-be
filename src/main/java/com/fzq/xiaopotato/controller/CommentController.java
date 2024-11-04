@@ -9,6 +9,7 @@ import com.fzq.xiaopotato.model.dto.comment.FirstCommentCreateDTO;
 import com.fzq.xiaopotato.model.dto.comment.FirstQueryDTO;
 import com.fzq.xiaopotato.model.dto.comment.SecondCommentCreateDTO;
 import com.fzq.xiaopotato.model.dto.comment.SecondQueryDTO;
+import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.vo.FirstCommentVO;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.SecondCommentVO;
@@ -66,5 +67,14 @@ public class CommentController {
         IPage<SecondCommentVO> result = commentService.listSecondLevelCommentsByPostId(secondQueryDTO, request);
         return ResultUtils.success(result);
 
+    }
+
+    @PostMapping("/deleteByCommentId")
+    public BaseResponse<Boolean> deleteComment(@RequestBody IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null || idDTO.getId() == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Comment ID is null");
+        }
+
+        return ResultUtils.success(commentService.deleteComment(idDTO, request));
     }
 }
