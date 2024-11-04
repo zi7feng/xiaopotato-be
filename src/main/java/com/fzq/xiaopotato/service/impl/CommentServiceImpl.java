@@ -12,6 +12,7 @@ import com.fzq.xiaopotato.model.dto.comment.FirstCommentCreateDTO;
 import com.fzq.xiaopotato.model.dto.comment.FirstQueryDTO;
 import com.fzq.xiaopotato.model.dto.comment.SecondCommentCreateDTO;
 import com.fzq.xiaopotato.model.dto.comment.SecondQueryDTO;
+import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.entity.Comment;
 import com.fzq.xiaopotato.model.entity.Postcomment;
 import com.fzq.xiaopotato.model.entity.User;
@@ -155,6 +156,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
                 firstCommentVO.setCommentorAccount(usr.getUserAccount());
                 firstCommentVO.setCommentorAvatar(usr.getUserAvatar());
             }
+
+            int secondLevelCount = commentMapper.selectCount(
+                    new QueryWrapper<Comment>().eq("parent_id", comment.getCommentId())
+            ).intValue();
+            firstCommentVO.setSecondLevelCount(secondLevelCount);
+
             return firstCommentVO;
         }).collect(Collectors.toList());
 
@@ -218,6 +225,38 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
 
         return resultPage;
 
+    }
+
+
+    @Transactional
+    @Override
+    public boolean deleteComment(IdDTO idDTO, HttpServletRequest request) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+
+        Long commentId = idDTO.getId();
+        // 查找要删除的评论
+        Comment comment = commentMapper.selectById(commentId);
+        if (comment == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Comment not found.");
+        }
+
+        // 检查是否为评论的作者
+        if (!comment.getUserId().equals(user.getId())) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "You are not authorized to delete this comment.");
+        }
+
+        int result;
+        if (comment.getParentId() == null) {
+            // 如果是一级评论，则删除该评论和所有子评论（级联删除）
+            result = commentMapper.deleteById(commentId);
+        } else {
+            // 如果是二级评论或更深的评论，仅删除当前评论
+            result = commentMapper.deleteById(commentId);
+        }
+        return result > 0;
     }
 
     private List<Comment> getAllChildComments(Long parentId) {

@@ -14,6 +14,8 @@ public class FirstCommentVO implements Serializable {
     private Date createTime;
     private Long commentUserId;
 
+    private Integer secondLevelCount;
+
     private String commentorFirstName;
     private String commentorLastName;
     private String commentorAccount;
