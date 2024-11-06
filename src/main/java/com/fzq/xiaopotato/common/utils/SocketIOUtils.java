@@ -173,4 +173,27 @@ public class SocketIOUtils {
         }
     }
 
+
+    public void handlePullAllNotifications(SocketIOClient client) {
+        String token = client.getHandshakeData().getSingleUrlParam("token");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();
+        }
+
+        if (token != null) {
+            Claims claims = jwtUtils.getClaimsFromToken(token);
+            Long userId = claims.get("id", Long.class);
+
+            if (userId != null) {
+                // 获取所有通知（包括已读和未读）
+                List<NotificationVO> allNotifications = notificationService.getAllNotifications(userId);
+
+                // 推送所有通知到客户端
+                allNotifications.forEach(notification -> client.sendEvent("pull", notification));
+
+                log.info("Pushed {} notifications (all) to user {}", allNotifications.size(), userId);
+            }
+        }
+    }
+
 }
