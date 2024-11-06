@@ -31,6 +31,10 @@ public class SocketIOConfig {
             socketIOUtils.handleMessage(client, data);
         });
 
+        server.addEventListener("pull", String.class, (client, data, ackSender) -> {
+            socketIOUtils.handlePullAllNotifications(client);
+        });
+
         return server;
     }
 

@@ -96,4 +96,27 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             throw new RuntimeException("Error updating notifications", e);
         }
     }
+
+    @Override
+    public List<NotificationVO> getAllNotifications(Long userId) {
+        Assert.notNull(userId, "User ID cannot be null");
+
+        try {
+            QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id", userId).orderByDesc("create_time");
+
+            return notificationMapper.selectList(queryWrapper)
+                    .stream()
+                    .map(notification -> {
+                        NotificationVO notificationVO = new NotificationVO();
+                        BeanUtils.copyProperties(notification, notificationVO);
+                        return notificationVO;
+                    })
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("Error getting all notifications for user {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Error retrieving notifications", e);
+        }
+    }
+
 }

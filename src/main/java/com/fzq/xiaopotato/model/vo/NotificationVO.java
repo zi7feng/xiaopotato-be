@@ -1,6 +1,5 @@
 package com.fzq.xiaopotato.model.vo;
 
-import com.fzq.xiaopotato.common.NotificationType;
 import lombok.Data;
 
 import java.io.Serializable;
