@@ -33,6 +33,8 @@ public class PostVO implements Serializable {
 
     private String postGenre;
 
+    private Integer imageWidth;
+    private Integer imageHeight;
 
 
     /**

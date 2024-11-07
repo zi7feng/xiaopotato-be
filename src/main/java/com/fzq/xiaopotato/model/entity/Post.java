@@ -60,6 +60,12 @@ public class Post implements Serializable {
     @TableField(value = "is_delete")
     private Integer isDelete;
 
+    @TableField(value = "image_width")
+    private Integer imageWidth;
+
+    @TableField(value = "image_height")
+    private Integer imageHeight;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }
