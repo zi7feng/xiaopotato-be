@@ -10,6 +10,7 @@ import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
 import com.fzq.xiaopotato.model.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,5 +40,7 @@ public interface UserService extends IService<User> {
 
     IPage<UserVO> listFansByPage(PageDTO pageDTO, HttpServletRequest request);
     IPage<UserVO> listFollowsByPage(PageDTO pageDTO, HttpServletRequest request);
+
+    IPage<NotificationVO> listNotificationByPage(PageDTO pageDTO, HttpServletRequest request);
 
 }

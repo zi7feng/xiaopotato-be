@@ -13,6 +13,7 @@ import com.fzq.xiaopotato.model.dto.user.UserQueryDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.Post;
+import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.UserService;
@@ -165,6 +166,21 @@ public class UserController {
         IPage<UserVO> result = userService.listFollowsByPage(pageDTO, request);
         return ResultUtils.success(result);
     }
+
+    @Operation(summary = "Get Users by page")
+    @GetMapping("/selectNotificationByPage")
+    public BaseResponse<IPage<NotificationVO>> listUserByPage(PageDTO pageDTO, HttpServletRequest request) {
+        if (pageDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Null query dto.");
+        }
+        if (pageDTO.getCurrentPage() <= 0 || pageDTO.getPageSize() <= 0) {
+            pageDTO.setCurrentPage(1);
+            pageDTO.setPageSize(10);
+        }
+        IPage<NotificationVO> result = userService.listNotificationByPage(pageDTO, request);
+        return ResultUtils.success(result);
+    }
+
 
 
 }
