@@ -35,6 +35,10 @@ public class SocketIOConfig {
             socketIOUtils.handlePullAllNotifications(client);
         });
 
+        server.addEventListener("heartbeat", String.class, (client, data, ackSender) -> {
+            socketIOUtils.handleHeartbeat(client);
+        });
+
         return server;
     }
 
