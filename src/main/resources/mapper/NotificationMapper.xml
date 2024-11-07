@@ -7,7 +7,7 @@
     <resultMap id="BaseResultMap" type="com.fzq.xiaopotato.model.entity.Notification">
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="userId" column="user_id" jdbcType="BIGINT"/>
-            <result property="followerId" column="follower_id" jdbcType="BIGINT"/>
+            <result property="sourceId" column="source_id" jdbcType="BIGINT"/>
             <result property="firstName" column="first_name" jdbcType="VARCHAR"/>
             <result property="lastName" column="last_name" jdbcType="VARCHAR"/>
             <result property="account" column="account" jdbcType="VARCHAR"/>
@@ -18,7 +18,7 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,follower_id,
+        id,user_id,source_id,
         first_name,last_name,account,
         avatar,notification_type,create_time,
         is_read

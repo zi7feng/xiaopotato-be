@@ -3,9 +3,13 @@ package com.fzq.xiaopotato.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
+import com.fzq.xiaopotato.mapper.UserPostMapper;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.entity.Likes;
+import com.fzq.xiaopotato.model.entity.UserPost;
+import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.LikesService;
 import com.fzq.xiaopotato.mapper.LikesMapper;
@@ -13,6 +17,12 @@ import com.fzq.xiaopotato.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import static com.fzq.xiaopotato.common.NotificationType.FOLLOW;
+import static com.fzq.xiaopotato.common.NotificationType.LIKE;
 
 /**
 * @author zfeng
@@ -30,6 +40,12 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
     @Autowired
     private LikesMapper likesMapper;
 
+    @Autowired
+    private UserPostMapper userPostMapper;
+
+    @Autowired
+    private SocketIOUtils socketIOUtils;
+
     @Override
     public boolean likeByPostId(IdDTO idDTO, HttpServletRequest request) {
         UserVO user = userService.getCurrentUser(request);
@@ -39,12 +55,24 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
         long userId = user.getId();
         long postId = idDTO.getId();
 
+        QueryWrapper<UserPost> userPostQuery = new QueryWrapper<>();
+        userPostQuery.eq("post_id", postId);
+        UserPost userPost = userPostMapper.selectOne(userPostQuery);
+
+        if (userPost == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Post creator not found");
+        }
+
+        long creatorId = userPost.getUserId();
+
         boolean isLiked = isPostLikedByUser(userId, postId);
         if (!isLiked) {
             Likes likes = new Likes();
             likes.setUserId(userId);
             likes.setPostId(postId);
             likesMapper.insert(likes);
+
+            sendFollowNotification(user, creatorId);
             return true;
         } else {
             QueryWrapper<Likes> queryWrapper = new QueryWrapper<>();
@@ -53,6 +81,25 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
             return false;
         }
 
+    }
+
+    private void sendFollowNotification(UserVO user, Long destinateId) {
+        NotificationVO notification = new NotificationVO();
+
+        notification.setSourceId(user.getId());
+        notification.setFirstName(user.getFirstName());
+        notification.setLastName(user.getLastName());
+        notification.setAccount(user.getUserAccount());
+        notification.setAvatar(user.getUserAvatar());
+        notification.setNotificationType(String.valueOf(LIKE));
+
+        // 设置时间戳为字符串格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        notification.setTimestamp(LocalDateTime.now().format(formatter));
+
+        socketIOUtils.sendHeartbeat(destinateId);
+        // 发送通知
+        socketIOUtils.sendNotification(destinateId, notification);
     }
 
     private boolean isPostLikedByUser(long userId, long postId) {

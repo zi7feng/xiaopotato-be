@@ -30,8 +30,8 @@ public class Notification implements Serializable {
     /**
      * 
      */
-    @TableField(value = "follower_id")
-    private Long followerId;
+    @TableField(value = "source_id")
+    private Long sourceId;
 
     /**
      * 

@@ -8,6 +8,8 @@ import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 
+import java.util.Map;
+
 @org.springframework.context.annotation.Configuration
 public class SocketIOConfig {
 
@@ -35,7 +37,7 @@ public class SocketIOConfig {
             socketIOUtils.handlePullAllNotifications(client);
         });
 
-        server.addEventListener("heartbeat", String.class, (client, data, ackSender) -> {
+        server.addEventListener("heartbeat", Map.class, (client, data, ackSender) -> {
             socketIOUtils.handleHeartbeat(client);
         });
 

@@ -22,6 +22,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.fzq.xiaopotato.common.NotificationType.FOLLOW;
+
 /**
 * @author zfeng
 * @description 针对表【Userfollow(User Follow Relationship Table)】的数据库操作Service实现
@@ -88,12 +90,12 @@ public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfol
         NotificationVO notification = new NotificationVO();
 
         // 手动设置字段值
-        notification.setFollowerId(follower.getId());
+        notification.setSourceId(follower.getId());
         notification.setFirstName(follower.getFirstName());
         notification.setLastName(follower.getLastName());
         notification.setAccount(follower.getUserAccount());
         notification.setAvatar(follower.getUserAvatar());
-        notification.setNotificationType("follow");
+        notification.setNotificationType(String.valueOf(FOLLOW));
 
         // 设置时间戳为字符串格式
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
