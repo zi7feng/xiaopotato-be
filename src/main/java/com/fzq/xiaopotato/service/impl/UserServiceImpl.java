@@ -15,6 +15,7 @@ import com.fzq.xiaopotato.model.dto.user.UserQueryDTO;
 import com.fzq.xiaopotato.model.dto.user.UserRegisterDTO;
 import com.fzq.xiaopotato.model.dto.user.UserUpdateDTO;
 import com.fzq.xiaopotato.model.entity.*;
+import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.model.vo.PostVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.*;
@@ -68,6 +69,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     @Lazy
     private UserfollowService userfollowService;
+
+    @Autowired
+    private NotificationMapper notificationMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
@@ -413,6 +417,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         userVOPage.setRecords(userVOList);
 
         return userVOPage;
+
+    }
+
+    @Override
+    public IPage<NotificationVO> listNotificationByPage(PageDTO pageDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN);
+        }
+        Long userId = user.getId();
+
+        // 设置分页参数
+        Page<Notification> page = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize());
+
+        // 创建查询条件
+        QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId)
+                .orderByDesc("create_time"); // 按创建时间降序排列
+
+        // 分页查询
+        IPage<Notification> notificationPage = notificationMapper.selectPage(page, queryWrapper);
+
+        // 转换成 NotificationVO
+        List<NotificationVO> notificationVOList = notificationPage.getRecords().stream().map(notification -> {
+            NotificationVO notificationVO = new NotificationVO();
+            BeanUtils.copyProperties(notification, notificationVO);
+            return notificationVO;
+        }).collect(Collectors.toList());
+
+        // 设置返回的分页对象
+        Page<NotificationVO> resultPage = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize(), notificationPage.getTotal());
+        resultPage.setRecords(notificationVOList);
+
+        return resultPage;
 
     }
 
