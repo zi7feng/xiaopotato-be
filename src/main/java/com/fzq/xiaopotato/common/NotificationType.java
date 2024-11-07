@@ -3,7 +3,8 @@ package com.fzq.xiaopotato.common;
 public enum NotificationType {
     LIKE("like"),
     SAVE("save"),
-    FOLLOW("follow");
+    FOLLOW("follow"),
+    COMMENT("comment");
 
     private final String value;
 

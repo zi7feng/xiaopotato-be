@@ -155,7 +155,7 @@ CREATE TABLE Postcomment (
 CREATE TABLE Notification (
                               id BIGINT AUTO_INCREMENT PRIMARY KEY,
                               user_id BIGINT NOT NULL,
-                              follower_id BIGINT,
+                              source_id BIGINT,
                               first_name VARCHAR(255),
                               last_name VARCHAR(255),
                               account VARCHAR(255),

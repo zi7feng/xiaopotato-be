@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.PostcommentMapper;
 import com.fzq.xiaopotato.mapper.UserMapper;
+import com.fzq.xiaopotato.mapper.UserPostMapper;
 import com.fzq.xiaopotato.model.dto.comment.FirstCommentCreateDTO;
 import com.fzq.xiaopotato.model.dto.comment.FirstQueryDTO;
 import com.fzq.xiaopotato.model.dto.comment.SecondCommentCreateDTO;
@@ -16,7 +18,9 @@ import com.fzq.xiaopotato.model.dto.common.IdDTO;
 import com.fzq.xiaopotato.model.entity.Comment;
 import com.fzq.xiaopotato.model.entity.Postcomment;
 import com.fzq.xiaopotato.model.entity.User;
+import com.fzq.xiaopotato.model.entity.UserPost;
 import com.fzq.xiaopotato.model.vo.FirstCommentVO;
+import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.model.vo.SecondCommentVO;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import com.fzq.xiaopotato.service.CommentService;
@@ -28,10 +32,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.fzq.xiaopotato.common.NotificationType.COMMENT;
+import static com.fzq.xiaopotato.common.NotificationType.SAVE;
 
 /**
 * @author zfeng
@@ -53,6 +62,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private SocketIOUtils socketIOUtils;
+
+    @Autowired
+    private UserPostMapper userPostMapper;
 
     @Transactional
     @Override
@@ -78,6 +93,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         postcomment.setCommentId(comment.getCommentId());
         postcomment.setPostId(commentCreateDTO.getPostId());
         postcommentMapper.insert(postcomment);
+
+        QueryWrapper<UserPost> userPostQuery = new QueryWrapper<>();
+        userPostQuery.eq("post_id", commentCreateDTO.getPostId());
+        UserPost userPost = userPostMapper.selectOne(userPostQuery);
+        if (userPost == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Post creator not found");
+        }
+
+        long creatorId = userPost.getUserId();
+        sendFollowNotification(user, creatorId);
 
         return comment.getCommentId();
     }
@@ -109,6 +134,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         postcomment.setCommentId(comment.getCommentId());
         postcomment.setPostId(commentCreateDTO.getPostId());
         postcommentMapper.insert(postcomment);
+
 
         return comment.getCommentId();
     }
@@ -268,6 +294,25 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
 
         return allComments;
+    }
+
+    private void sendFollowNotification(UserVO user, Long destinateId) {
+        NotificationVO notification = new NotificationVO();
+
+        notification.setSourceId(user.getId());
+        notification.setFirstName(user.getFirstName());
+        notification.setLastName(user.getLastName());
+        notification.setAccount(user.getUserAccount());
+        notification.setAvatar(user.getUserAvatar());
+        notification.setNotificationType(String.valueOf(COMMENT));
+
+        // 设置时间戳为字符串格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        notification.setTimestamp(LocalDateTime.now().format(formatter));
+
+        socketIOUtils.sendHeartbeat(destinateId);
+        // 发送通知
+        socketIOUtils.sendNotification(destinateId, notification);
     }
 }
 
