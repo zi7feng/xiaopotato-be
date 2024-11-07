@@ -1,9 +1,6 @@
 package com.fzq.xiaopotato.common.utils;
 
 import com.corundumstudio.socketio.SocketIOClient;
-import com.corundumstudio.socketio.annotation.OnConnect;
-import com.corundumstudio.socketio.annotation.OnDisconnect;
-import com.corundumstudio.socketio.annotation.OnEvent;
 import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.service.NotificationService;
 import io.jsonwebtoken.Claims;
@@ -13,8 +10,6 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -106,29 +101,16 @@ public class SocketIOUtils {
     }
 
     public boolean isUserOnline(Long userId) {
-        try {
-            // 检查内存中的在线状态
-            boolean inMemory = onlineUsers.containsKey(userId) &&
-                    onlineUsers.get(userId).isChannelOpen();
+        boolean inMemory = onlineUsers.containsKey(userId) && onlineUsers.get(userId).isChannelOpen();
+        boolean inRedis = Boolean.TRUE.equals(redisTemplate.hasKey(ONLINE_USER_KEY_PREFIX + userId));
 
-            // 检查Redis中的在线状态
-            boolean inRedis = Boolean.TRUE.equals(
-                    redisTemplate.hasKey(ONLINE_USER_KEY_PREFIX + userId));
-
-            // 如果状态不一致，以Redis为准
-            if (inMemory != inRedis) {
-                log.warn("Inconsistent online status for user {}: memory={}, redis={}",
-                        userId, inMemory, inRedis);
-                if (!inRedis) {
-                    onlineUsers.remove(userId);
-                }
+        if (inMemory != inRedis) {
+            if (!inRedis) {
+                onlineUsers.remove(userId);
             }
-
             return inRedis;
-        } catch (Exception e) {
-            log.error("Error checking online status for user {}: {}", userId, e.getMessage(), e);
-            return false;
         }
+        return inMemory || inRedis;
     }
 
     public void sendHeartbeat(Long userId) {
@@ -192,6 +174,29 @@ public class SocketIOUtils {
                 allNotifications.forEach(notification -> client.sendEvent("pull", notification));
 
                 log.info("Pushed {} notifications (all) to user {}", allNotifications.size(), userId);
+            }
+        }
+    }
+
+    public void handleHeartbeat(SocketIOClient client) {
+        String token = client.getHandshakeData().getSingleUrlParam("token");
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();
+        }
+
+        if (token != null) {
+            Claims claims = jwtUtils.getClaimsFromToken(token);
+            Long userId = claims.get("id", Long.class);
+            if (userId != null) {
+                // 更新 Redis 中用户的在线状态
+                redisTemplate.opsForValue().set(ONLINE_USER_KEY_PREFIX + userId, "online", 1, TimeUnit.MINUTES);
+
+                // 更新内存中的用户状态
+                if (!onlineUsers.containsKey(userId) || !onlineUsers.get(userId).equals(client)) {
+                    onlineUsers.put(userId, client);
+                }
+
+                log.info("Received heartbeat from user {}", userId);
             }
         }
     }
