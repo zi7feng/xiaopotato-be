@@ -13,11 +13,14 @@
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
             <result property="isDelete" column="is_delete" jdbcType="TINYINT"/>
+            <result property="imageWidth" column="image_width" jdbcType="BIGINT"/>
+            <result property="imageHeight" column="image_height" jdbcType="BIGINT"/>
+
     </resultMap>
 
     <sql id="Base_Column_List">
         id,post_title,post_content,
         post_image, post_genre, create_time,
-        update_time,is_delete
+        update_time,is_delete, image_width, image_height
     </sql>
 </mapper>

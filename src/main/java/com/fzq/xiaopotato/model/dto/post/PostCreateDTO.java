@@ -26,5 +26,8 @@ public class PostCreateDTO implements Serializable {
 
     private String postGenre;
 
+    private Integer imageWidth;
+    private Integer imageHeight;
+
 
 }

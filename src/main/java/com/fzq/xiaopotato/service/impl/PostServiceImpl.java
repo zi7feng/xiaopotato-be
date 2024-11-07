@@ -87,6 +87,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         post.setPostContent(postCreateDTO.getPostContent());
         post.setPostImage(postCreateDTO.getPostImage());
         post.setPostGenre(postCreateDTO.getPostGenre());
+        post.setImageWidth(postCreateDTO.getImageWidth());
+        post.setImageHeight(postCreateDTO.getImageHeight());
 
         postMapper.insert(post);
         UserPost userPost = new UserPost();
@@ -307,6 +309,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         post.setPostContent(postUpdateDTO.getPostContent());
         post.setPostImage(postUpdateDTO.getPostImage());
         post.setPostGenre(postUpdateDTO.getPostGenre());
+        post.setImageWidth(postUpdateDTO.getImageWidth());
+        post.setImageHeight(postUpdateDTO.getImageHeight());
         int result = postMapper.updateById(post);
         if (result > 0) {
             // delete old tag relations

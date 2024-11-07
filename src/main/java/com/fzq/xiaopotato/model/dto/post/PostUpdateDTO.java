@@ -25,4 +25,7 @@ public class PostUpdateDTO implements Serializable {
     private String postImage;
     private String postGenre;
 
+    private Integer imageWidth;
+    private Integer imageHeight;
+
 }
