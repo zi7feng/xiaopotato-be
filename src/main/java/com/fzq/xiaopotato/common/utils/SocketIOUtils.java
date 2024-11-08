@@ -215,9 +215,9 @@ public class SocketIOUtils {
                     onlineUsers.put(userId, client);
                 }
 
-                if (sendRecommendation % 40 == 0) {
+                if (sendRecommendation % 40 == 1) {
                     sendRecommendationKnowledge(client);
-                    sendRecommendation = 0;
+                    sendRecommendation = 1;
                 }
                 sendRecommendation += 1;
                 log.info("Received heartbeat from user {}", userId);
