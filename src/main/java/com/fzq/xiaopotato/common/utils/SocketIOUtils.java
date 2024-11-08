@@ -1,24 +1,39 @@
 package com.fzq.xiaopotato.common.utils;
 
 import com.corundumstudio.socketio.SocketIOClient;
+import com.fzq.xiaopotato.XiaopotatoApplication;
+import com.fzq.xiaopotato.constant.NotificationConstant;
 import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.service.NotificationService;
 import io.jsonwebtoken.Claims;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.jettison.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import static com.fzq.xiaopotato.common.NotificationType.RECOMMEND;
+
 @Slf4j
 @Component
 public class SocketIOUtils {
+
+    private static final Logger logger = LoggerFactory.getLogger(SocketIOUtils.class);
 
     private final Map<Long, SocketIOClient> onlineUsers = new ConcurrentHashMap<>();
 
@@ -33,7 +48,10 @@ public class SocketIOUtils {
 
     private static final String ONLINE_USER_KEY_PREFIX = "user:online:";
 
+    private static int sendRecommendation = 0;
+
     public void onConnect(SocketIOClient client) {
+        logger.info("onConnect");
         String token = client.getHandshakeData().getSingleUrlParam("token");
 //        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
 
@@ -48,6 +66,7 @@ public class SocketIOUtils {
 
             // 用户上线后，将在线状态存入 Redis
             redisTemplate.opsForValue().set(ONLINE_USER_KEY_PREFIX + userId, "online", 12, TimeUnit.HOURS);
+
 
             // 查询并推送用户的未读通知
             List<NotificationVO> unreadNotifications = notificationService.getUnreadNotifications(userId);
@@ -196,9 +215,32 @@ public class SocketIOUtils {
                     onlineUsers.put(userId, client);
                 }
 
+                if (sendRecommendation % 40 == 0) {
+                    sendRecommendationKnowledge(client);
+                    sendRecommendation = 0;
+                }
+                sendRecommendation += 1;
                 log.info("Received heartbeat from user {}", userId);
             }
         }
+    }
+
+    public void sendRecommendationKnowledge(SocketIOClient client) {
+        String randomContent = getRandom();
+
+        // 创建 NotificationVO 实例并设置内容
+        NotificationVO notification = new NotificationVO();
+        notification.setContent(randomContent);
+        notification.setNotificationType(String.valueOf(RECOMMEND));
+        notification.setTimestamp(LocalDateTime.now().toString());
+
+        // 发送通知
+        client.sendEvent("notification", notification);
+    }
+
+    private String getRandom() {
+        Random random = new Random();
+        return NotificationConstant.FUN_SENTENCES.get(random.nextInt(NotificationConstant.FUN_SENTENCES.size()));
     }
 
 }

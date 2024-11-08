@@ -4,7 +4,8 @@ public enum NotificationType {
     LIKE("like"),
     SAVE("save"),
     FOLLOW("follow"),
-    COMMENT("comment");
+    COMMENT("comment"),
+    RECOMMEND("recommendation");
 
     private final String value;
 
