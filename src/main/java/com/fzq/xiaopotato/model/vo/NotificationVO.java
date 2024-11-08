@@ -13,6 +13,7 @@ public class NotificationVO implements Serializable {
     private String lastName;
     private String account;
     private String avatar;
+    private String content;
 
     private String notificationType;
 
