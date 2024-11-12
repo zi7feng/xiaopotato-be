@@ -19,8 +19,10 @@ public class SocketIOConfig {
     @Bean
     public SocketIOServer socketIOServer() {
         Configuration config = new Configuration();
-        config.setHostname("localhost");
-        config.setPort(8081);
+//        config.setHostname("localhost");
+//        config.setPort(8081);
+        config.setHostname("0.0.0.0");
+        config.setPort(80);
         config.setOrigin("*");
         config.setTransports(com.corundumstudio.socketio.Transport.WEBSOCKET, Transport.POLLING);
 
