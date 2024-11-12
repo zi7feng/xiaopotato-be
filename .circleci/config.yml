@@ -31,7 +31,7 @@ jobs:
       - eb/setup
       - run:
           command: |
-            eb init xiao-potato -r $AWS_DEFAULT_REGION -p corretto-17
+            eb init xiaoPotato -r $AWS_DEFAULT_REGION -p corretto-17
             echo "deploy:
                     artifact: target/xiao-potato-0.0.1-SNAPSHOT.jar" >> .elasticbeanstalk/config.yml
             eb deploy springboot-env

@@ -1,10 +1,14 @@
 branch-defaults:
-  dev:
-    environment: springboot-env
-    group_suffix: null
+  dev-fzq:
+    environment: xiaopotato-env
+deploy:
+  artifact: target/xiao-potato-0.0.1-SNAPSHOT.jar
+environment-defaults:
+  potato-env:
+    branch: null
+    repository: null
 global:
-  application_name: xiao-potato
-  branch: null
+  application_name: xiaoPotato
   default_ec2_keyname: null
   default_platform: Corretto 17
   default_region: us-west-2
@@ -13,8 +17,5 @@ global:
   platform_name: null
   platform_version: null
   profile: eb-cli
-  repository: null
   sc: git
   workspace_type: Application
-deploy:
-  artifact: target/xiao-potato-0.0.1-SNAPSHOT.jar
