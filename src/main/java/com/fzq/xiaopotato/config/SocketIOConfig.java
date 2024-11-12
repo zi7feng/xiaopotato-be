@@ -24,6 +24,7 @@ public class SocketIOConfig {
         config.setHostname("0.0.0.0");
         config.setPort(80);
         config.setOrigin("*");
+        config.setContext("/socket.io");
         config.setTransports(com.corundumstudio.socketio.Transport.WEBSOCKET, Transport.POLLING);
 
         SocketIOServer server = new SocketIOServer(config);
