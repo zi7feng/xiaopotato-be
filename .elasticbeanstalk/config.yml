@@ -3,7 +3,7 @@ branch-defaults:
     environment: springboot-env
     group_suffix: null
 global:
-  application_name: RandAPI
+  application_name: xiao-potato
   branch: null
   default_ec2_keyname: null
   default_platform: Corretto 17
@@ -17,4 +17,4 @@ global:
   sc: git
   workspace_type: Application
 deploy:
-  artifact: target/RandAPI-0.0.1-SNAPSHOT.jar
+  artifact: target/xiao-potato-0.0.1-SNAPSHOT.jar
