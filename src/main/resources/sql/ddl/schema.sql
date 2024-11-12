@@ -3,7 +3,7 @@ CREATE DATABASE IF NOT EXISTS POTATO;
 USE POTATO;
 
 # SET FOREIGN_KEY_CHECKS = 0;
-
+#
 # DROP TABLE IF EXISTS POTATO.Notification;
 # DROP TABLE IF EXISTS POTATO.Postcomment;
 # DROP TABLE IF EXISTS POTATO.Comment;
@@ -16,7 +16,7 @@ USE POTATO;
 # DROP TABLE IF EXISTS POTATO.Tag;
 # DROP TABLE IF EXISTS POTATO.Post;
 # DROP TABLE IF EXISTS POTATO.User;
-
+#
 # SET FOREIGN_KEY_CHECKS = 1;
 
 
@@ -163,5 +163,5 @@ CREATE TABLE Notification (
                               notification_type VARCHAR(50),
                               create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
                               is_read TINYINT DEFAULT 0,
-                              FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+                              FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
 );
