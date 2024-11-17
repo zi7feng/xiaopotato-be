@@ -443,6 +443,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         List<NotificationVO> notificationVOList = notificationPage.getRecords().stream().map(notification -> {
             NotificationVO notificationVO = new NotificationVO();
             BeanUtils.copyProperties(notification, notificationVO);
+            notificationVO.setTimestamp(
+                    new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(notification.getCreateTime())
+            );
             return notificationVO;
         }).collect(Collectors.toList());
 
