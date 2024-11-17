@@ -3,6 +3,7 @@ package com.fzq.xiaopotato.model.vo;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Data
 public class NotificationVO implements Serializable {
@@ -17,5 +18,5 @@ public class NotificationVO implements Serializable {
 
     private String notificationType;
 
-    private String timestamp;
+    private Date createTime;
 }
