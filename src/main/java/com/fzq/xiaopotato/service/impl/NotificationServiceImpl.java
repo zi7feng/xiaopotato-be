@@ -110,6 +110,10 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
                     .map(notification -> {
                         NotificationVO notificationVO = new NotificationVO();
                         BeanUtils.copyProperties(notification, notificationVO);
+
+                        notificationVO.setTimestamp(
+                                new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(notification.getCreateTime())
+                        );
                         return notificationVO;
                     })
                     .collect(Collectors.toList());

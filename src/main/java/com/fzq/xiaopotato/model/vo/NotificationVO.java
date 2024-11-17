@@ -18,5 +18,5 @@ public class NotificationVO implements Serializable {
 
     private String notificationType;
 
-    private Date createTime;
+    private String timestamp;
 }
