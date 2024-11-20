@@ -29,6 +29,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
+
 /**
 * @author zfeng
 * @description 针对表【Post(Post Table)】的数据库操作Service实现
@@ -361,7 +363,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         UserPost userPost = userPostMapper.selectOne(
                 new QueryWrapper<UserPost>().eq("user_id", userId).eq("post_id", postId)
         );
-        if (userPost == null) {
+        if (userPost == null && !user.getUserRole().equals(ADMIN_ROLE)) {
             throw new BusinessException(ErrorCode.NO_AUTH, "Not the owner of the post.");
         }
 
