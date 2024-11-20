@@ -1,0 +1,39 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver # The fully qualified name of the JDBC driver class
+    url: jdbc:mysql://localhost:3306/POTATO?serverTimezone=America/New_York # The JDBC URL for the MySQL database connection
+    username: root # Database username
+    password: Gpt12345 # Database password
+  session:
+    timeout: 86400 # Session timeout in seconds (24 hours)
+    store-type: redis # The type of session storage, using Redis
+  data:
+    redis:
+      port: 6379 # Redis server port
+      host: localhost # Redis server host address
+      database: 0 # Redis database index (default is 0)
+  mybatis-plus:
+    configuration:
+      map-underscore-to-camel-case: false # Map underscore field names in DB to camelCase in Java (false = disabled)
+      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # The logging implementation for MyBatis, here it logs to stdout
+    global-config:
+      db-config:
+        logic-delete-field: isDelete # The name of the field used for logical deletion
+        logic-delete-value: 1 # The value indicating a record is logically deleted
+        logic-not-delete-value: 0 # The value indicating a record is not logically deleted
+
+socketio:
+  host: localhost # Socket.IO server hostname
+  port: 8081 # Socket.IO server port
+
+server:
+  port: 8080 # Application server port
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs # The URL path for the OpenAPI 3.0 documentation
+    enabled: false # Disable the API documentation endpoint (false = disabled)
+
+
+#    java -Dspring.profiles.active=prod -jar your-application.jar
+

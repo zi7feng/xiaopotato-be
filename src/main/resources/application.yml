@@ -1,47 +1,18 @@
-#spring:
-#  datasource:
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://localhost:3306/potato?serverTimezone=America/New_York # change the db to real database name
-#    username: root
-#    password: 123456
-#  session:
-#    timeout: 86400
-#    store-type: redis
-#  data:
-#    redis:
-#      port: 6379
-#      host: localhost
-#      database: 0
-#  mybatis-plus:
-#    configuration:
-#      map-underscore-to-camel-case: false
-#      log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-#    global-config:
-#      db-config:
-#        logic-delete-field: isDelete
-#        logic-delete-value: 1
-#        logic-not-delete-value: 0
-
 spring:
+  profiles:
+    active: dev
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    #    url: jdbc:mysql://localhost:3306/randapi?serverTimezone=America/New_York
-    #    username: root
-    #    password: 123456
-    url: jdbc:mysql://34.217.100.182:3306/POTATO
+    url: jdbc:mysql://localhost:3306/POTATO?serverTimezone=America/New_York # change the db to real database name
     username: root
-    password: Gpt12345
+    password: 123456
   session:
     timeout: 86400
     store-type: redis
   data:
-    #    mongodb:
-    #      uri: mongodb://localhost:27017
-    #      database: logs
     redis:
       port: 6379
-      host: 34.217.100.182
-      #      host: 172.31.5.208:3306
+      host: localhost
       database: 0
   mybatis-plus:
     configuration:
@@ -53,9 +24,13 @@ spring:
         logic-delete-value: 1
         logic-not-delete-value: 0
 
+socketio:
+  host: localhost
+  port: 8081
+
 
 server:
-  port: ${PORT:8080}
+  port: 8080
 
 springdoc:
   api-docs:
