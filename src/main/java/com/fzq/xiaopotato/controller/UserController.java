@@ -121,6 +121,17 @@ public class UserController {
     }
 
 
+    @Operation(summary = "Delete User By Id")
+    @PostMapping("/deleteById")
+    public BaseResponse<Boolean> deleteUser(@RequestBody IdDTO idDTO, HttpServletRequest request) {
+        int result = userService.deleteUserById(idDTO, request);
+        if (result > 0) {
+            return ResultUtils.success(true);
+        }
+
+        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "delete fail.");
+    }
+
     @Operation(summary = "Get UserVO by id")
     @GetMapping("/selectById")
     public BaseResponse<UserVO> getUserById(IdDTO idDTO, HttpServletRequest request) {
