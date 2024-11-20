@@ -273,6 +273,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    public int deleteUserById(IdDTO idDTO, HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN, "user not logged in");
+        }
+        if (!ADMIN_ROLE.equals(user.getUserRole())) {
+            throw new BusinessException(ErrorCode.NO_AUTH, "Only Admin can delete user.");
+        }
+        return userMapper.deleteById(idDTO.getId());
+    }
+
+    @Override
     public boolean isAdmin(UserVO user) {
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);

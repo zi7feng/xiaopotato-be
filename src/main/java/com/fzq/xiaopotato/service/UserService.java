@@ -43,4 +43,6 @@ public interface UserService extends IService<User> {
 
     IPage<NotificationVO> listNotificationByPage(PageDTO pageDTO, HttpServletRequest request);
 
+    int deleteUserById(IdDTO idDTO, HttpServletRequest request);
+
 }
