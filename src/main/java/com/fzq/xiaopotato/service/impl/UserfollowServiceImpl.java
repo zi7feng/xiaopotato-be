@@ -52,6 +52,9 @@ public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfol
         }
         long followerId = user.getId();
         long followedId = idDTO.getId();
+        if (followedId == followerId) {
+            throw new BusinessException(ErrorCode.FORBIDDEN, "Cannot follow yourself.");
+        }
         boolean isFollowed =  isFollowed(followerId, followedId);
         if (!isFollowed) {
             Userfollow userfollow = new Userfollow();
