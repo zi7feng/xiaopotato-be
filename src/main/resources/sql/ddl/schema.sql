@@ -15,8 +15,13 @@ USE POTATO;
 # DROP TABLE IF EXISTS POTATO.UserPost;
 # DROP TABLE IF EXISTS POTATO.Tag;
 # DROP TABLE IF EXISTS POTATO.Post;
+<<<<<<< Updated upstream
 # DROP TABLE IF EXISTS POTATO.User;
 #
+=======
+
+
+>>>>>>> Stashed changes
 # SET FOREIGN_KEY_CHECKS = 1;
 
 
@@ -165,3 +170,27 @@ CREATE TABLE Notification (
                               is_read TINYINT DEFAULT 0,
                               FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
 );
+
+CREATE TABLE POTATO.Email (
+    email_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    from_user VARCHAR(255) NOT NULL COMMENT 'From user',
+    to_user   VARCHAR(255) NOT NULL COMMENT 'To user',
+    subject      VARCHAR(255) NOT NULL COMMENT 'Subject of E-mail',
+    content      VARCHAR(255) NOT NULL COMMENT 'Content of E-mail',
+    create_time  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
+    status       int NOT NULL COMMENT 'E-mail status: o not_send, 2 sent, 3 send_failed, 4 deleted...',
+    FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE
+);
+
+
+CREATE TABLE IF NOT EXISTS POTATO.UserEmail
+(
+    user_id BIGINT NOT NULL COMMENT 'User ID',
+    email_id BIGINT NOT NULL COMMENT 'Email ID',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Create Time',
+    PRIMARY KEY (user_id, email_id),
+    CONSTRAINT fk_user_email FOREIGN KEY (user_id) REFERENCES POTATO.User(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT fk_email FOREIGN KEY (email_id) REFERENCES POTATO.Email(email_id) ON DELETE CASCADE ON UPDATE CASCADE
+)
+    COMMENT 'User-Email Relationship Table';

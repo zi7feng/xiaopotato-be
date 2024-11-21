@@ -38,3 +38,5 @@ springdoc:
     enabled: true
   swagger-ui:
     path: /swagger-ui.html
+app:
+  EMAIL_RESEND_API_KEY:re_2xAW67Au_4qJSt6mpDwsDvZBsRxmBPxTm
