@@ -102,7 +102,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         }
 
         long creatorId = userPost.getUserId();
-        sendFollowNotification(user, creatorId);
+        if (user.getId() != creatorId) {
+            sendFollowNotification(user, creatorId);
+        }
 
         return comment.getCommentId();
     }

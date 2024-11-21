@@ -72,7 +72,9 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
             likes.setPostId(postId);
             likesMapper.insert(likes);
 
-            sendFollowNotification(user, creatorId);
+            if (user.getId() != creatorId) {
+                sendLikeNotification(user, creatorId);
+            }
             return true;
         } else {
             QueryWrapper<Likes> queryWrapper = new QueryWrapper<>();
@@ -83,7 +85,7 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
 
     }
 
-    private void sendFollowNotification(UserVO user, Long destinateId) {
+    private void sendLikeNotification(UserVO user, Long destinateId) {
         NotificationVO notification = new NotificationVO();
 
         notification.setSourceId(user.getId());

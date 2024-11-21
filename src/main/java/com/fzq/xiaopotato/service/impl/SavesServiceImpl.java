@@ -71,7 +71,9 @@ public class SavesServiceImpl extends ServiceImpl<SavesMapper, Saves>
             saves.setUserId(userId);
             saves.setPostId(postId);
             savesMapper.insert(saves);
-            sendFollowNotification(user, creatorId);
+            if (user.getId() != creatorId) {
+                sendSaveNotification(user, creatorId);
+            }
 
             return true;
         } else {
@@ -98,7 +100,7 @@ public class SavesServiceImpl extends ServiceImpl<SavesMapper, Saves>
         return isPostSavedByUser(user.getId(), idDTO.getId());
     }
 
-    private void sendFollowNotification(UserVO user, Long destinateId) {
+    private void sendSaveNotification(UserVO user, Long destinateId) {
         NotificationVO notification = new NotificationVO();
 
         notification.setSourceId(user.getId());
