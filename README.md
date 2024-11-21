@@ -90,3 +90,8 @@ Frontend request url: `http://localhost:8080/[api path]` -> `http://localhost:80
 Modify code and git[hub] operation ![git_operation.png](assets/git_operation.png)
 
 `git pull` + `git commit` + `github pull request` by GUI
+
+## insert mock post data with unsplash image
+
+execute the [sql](src/main/resources/sql/ddl/insertPostDataAndBindUser.sql)
+Use js to craw unsplash image, please check the frontend project: 'node ./puppeteer/index.cjs'
