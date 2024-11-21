@@ -384,7 +384,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Page<Post> page = new Page<>(postQueryDTO.getCurrentPage(), postQueryDTO.getPageSize());
-        Long userId = user.getId();
+        Long userId = postQueryDTO.getUserId();
         List<Long> postIds = userPostMapper.selectList(new QueryWrapper<UserPost>().eq("user_id", userId))
                 .stream()
                 .map(UserPost::getPostId)
