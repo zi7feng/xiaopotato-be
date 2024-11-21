@@ -14,6 +14,7 @@ public class PostQueryDTO implements Serializable {
     private String postContent;
     private String postGenre;
     private String sort;
+    private Long userId;
 
 
 
