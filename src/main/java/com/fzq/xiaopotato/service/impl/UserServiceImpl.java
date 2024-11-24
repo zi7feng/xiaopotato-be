@@ -223,7 +223,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         if (oldUser.getUserAvatar() != null) {
             String oldImageUrl = oldUser.getUserAvatar();
-            UploadUtils.deleteImage(oldImageUrl);
+            try {
+                UploadUtils.deleteImage(oldImageUrl);
+            } catch (Exception e) {
+                throw new BusinessException(ErrorCode.NULL_ERROR, "No old Image found");
+            }
+
         }
         oldUser.setGender(userUpdateDTO.getGender());
         oldUser.setUserAvatar(userUpdateDTO.getUserAvatar());
