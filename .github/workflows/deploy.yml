@@ -61,7 +61,7 @@ jobs:
             scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
   
 
-  # Create a script to run the application
+            # Create a script to run the application
             echo "Creating startup script..."
             cat <<EOF > /tmp/start-app.sh
             #!/bin/bash
