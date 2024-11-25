@@ -110,7 +110,8 @@ jobs:
           username: ${{ secrets.POTATO_USER }}
           password: ${{ secrets.POTATO_KEY }}
           source: "target/xiao-potato-0.0.1-SNAPSHOT.jar"
-          target: "~/"
+          target: "~"
+          strip_components: 1
           timeout: 300s
 
       # Verify transfer
