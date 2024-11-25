@@ -55,11 +55,14 @@ jobs:
         run: |
           echo "Verifying JAR file..."
           ls -l ${{ github.workspace }}/target
-          if [ ! -f ${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar ]; then
+          FULL_PATH="${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar"
+          echo "Expected JAR file full path: $FULL_PATH"
+          if [ ! -f $FULL_PATH ]; then
             echo "Error: JAR file not found in target directory!"
             exit 1
           fi
-          echo "JAR file is present."
+          echo "JAR file is present at: $FULL_PATH"
+      
 
       # Deploy to server using SSH and password
       - name: Deploy to Server
@@ -81,13 +84,13 @@ jobs:
             # Verify upload success on the server
             echo "Verifying that the JAR file was uploaded successfully..."
             sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
-            if [ -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; then
-              echo 'Upload verification successful: JAR file exists on the server.'
-            else
-              echo 'Upload verification failed: JAR file not found on the server.'
-              exit 1
-            fi
-            "
+             # Wait for the file to appear
+            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
+            while [ ! -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; do
+              echo 'Waiting for JAR file to appear...'
+              sleep 5
+            done
+            echo 'File upload completed.'
 
             # Stop old application running on port 8081
             echo "Checking for existing application on port 8081..."
