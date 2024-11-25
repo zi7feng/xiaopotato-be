@@ -3,7 +3,7 @@ name: Deploy Spring Boot Application
 on:
   push:
     branches:
-      - main  # Trigger when merging to the main branch
+      - main  # Trigger when merging到main分支时触发
 
 jobs:
   build-and-deploy:
@@ -31,7 +31,6 @@ jobs:
             ${{ runner.os }}-maven
 
       # Build the application
-      # Build the application
       - name: Build with Maven
         run: |
           echo "Running Maven build..."
@@ -50,27 +49,23 @@ jobs:
             echo "Build failed: JAR file not found in target directory!"
             exit 1
           fi
-      
 
       # Deploy to server using SSH and password
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: ${{ secrets.POTATO_HOST }}           # Server hostname or IP
-          username: ${{ secrets.POTATO_USER }}       # SSH username
-          password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
-          port: 22                                   # Default SSH port, change if needed
+          host: ${{ secrets.POTATO_HOST }}
+          username: ${{ secrets.POTATO_USER }}
+          password: ${{ secrets.POTATO_KEY }}
+          port: 22
           script: |
-            
-            # Change to the workspace directory
-            cd ${{ github.workspace }}
             # Remove old JAR file if it exists
             echo "Deleting old JAR file if it exists..."
             sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar"
-            
+
             # Upload the new JAR file
             echo "Uploading new JAR file to the home directory..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
+            sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no ${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
 
             # Wait for the file to appear
             sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
