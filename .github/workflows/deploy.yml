@@ -78,54 +78,59 @@ jobs:
           username: ${{ secrets.POTATO_USER }}
           password: ${{ secrets.POTATO_KEY }}
           port: 22
+          script_stop: true
           script: |
-            echo "Deploying using JAR file path: $JAR_FILE_PATH"
+            # Remove old JAR
+            rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar
 
-            # Upload new JAR file
-            echo "Uploading new JAR file to server..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no $JAR_FILE_PATH ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
-
-            # Verify file upload
-            echo "Verifying upload..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
-            
-            while [ ! -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; do
-              echo 'Waiting for JAR file to appear...'
-              sleep 5
-            done
-            echo 'File upload completed.'
-
-            # Stop old application running on port 8081
-            echo "Checking for existing application on port 8081..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
-            PID=\$(lsof -t -i:8081)
-            if [ ! -z \"\$PID\" ]; then
-              echo 'Killing process \$PID on port 8081'
-              kill -9 \$PID
-            else
-              echo 'No process running on port 8081'
+            # Stop existing application
+            PID=$(lsof -t -i:8081 || true)
+            if [ ! -z "$PID" ]; then
+              kill -9 $PID || true
             fi
             screen -S springboot-app -X quit || true
-            "
 
-            # Create a script to run the application
-            echo "Creating startup script on the server..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
-            cat <<EOF > /tmp/start-app.sh
+            # Create startup script
+            cat > /tmp/start-app.sh << 'EOF'
             #!/bin/bash
             export ALIYUN_ACCESS_KEY_ID=${{ secrets.ALIYUN_ACCESS_KEY_ID }}
             export ALIYUN_ACCESS_KEY_SECRET=${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
             java -Dspring.profiles.active=prod \
-                 -Daliyun.accessKeyId=\$ALIYUN_ACCESS_KEY_ID \
-                 -Daliyun.accessKeySecret=\$ALIYUN_ACCESS_KEY_SECRET \
+                 -Daliyun.accessKeyId=$ALIYUN_ACCESS_KEY_ID \
+                 -Daliyun.accessKeySecret=$ALIYUN_ACCESS_KEY_SECRET \
                  -jar ~/xiao-potato-0.0.1-SNAPSHOT.jar
             EOF
             chmod +x /tmp/start-app.sh
-            "
 
-            # Start the application in a new screen session
-            echo "Starting the application on the server..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
+      # Add a separate step for file transfer
+      - name: Transfer and Verify JAR
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.POTATO_HOST }}
+          username: ${{ secrets.POTATO_USER }}
+          password: ${{ secrets.POTATO_KEY }}
+          port: 22
+          script: |
+            # Remove existing JAR
+            rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar
+
+            # Transfer new JAR
+            scp ${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~/
+
+            # Verify transfer
+            while [ ! -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; do
+              echo "Waiting for JAR file transfer..."
+              sleep 5
+            done
+            echo "JAR file transfer completed"
+
+      # Add final step to start application
+      - name: Start Application
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.POTATO_HOST }}
+          username: ${{ secrets.POTATO_USER }}
+          password: ${{ secrets.POTATO_KEY }}
+          port: 22
+          script: |
             screen -dmS springboot-app /tmp/start-app.sh
-            "
-      
