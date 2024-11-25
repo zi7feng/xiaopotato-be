@@ -81,10 +81,6 @@ jobs:
           script: |
             echo "Deploying using JAR file path: $JAR_FILE_PATH"
 
-#            # Remove old JAR file
-#            echo "Deleting old JAR file if it exists on the server..."
-#            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar"
-
             # Upload new JAR file
             echo "Uploading new JAR file to server..."
             sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no $JAR_FILE_PATH ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
