@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,8 +54,8 @@ public class SocketIOUtils {
 
     public void onConnect(SocketIOClient client) {
         logger.info("onConnect");
-        String token = client.getHandshakeData().getSingleUrlParam("token");
-//        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
+//        String token = client.getHandshakeData().getSingleUrlParam("token");
+        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
 
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7).trim();
