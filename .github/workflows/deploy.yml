@@ -43,7 +43,17 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
           port: 22                                   # Default SSH port, change if needed
           script: |
-            # Stop old application
+            # Stop old application running on port 8081
+            echo "Checking for existing application on port 8081..."
+            PID=$(lsof -t -i:8081)
+            if [ ! -z "$PID" ]; then
+              echo "Killing process $PID on port 8081"
+              kill -9 $PID
+            else
+              echo "No process running on port 8081"
+            fi
+
+            # Stop old application if it's running in a screen session
             screen -S springboot-app -X quit || true
 
             # Create a script to run the application
