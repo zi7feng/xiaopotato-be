@@ -43,12 +43,18 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
           port: 22                                   # Default SSH port, change if needed
           script: |
+            # Delete old jar
+            rm xiao-potato-0.0.1-SNAPSHOT.jar
+            
             # Upload the new JAR file to the server's home directory (~)
             echo "Uploading new JAR file to the home directory..."
             scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
             
-            echo "Waiting for file upload to complete..."
-            sleep 120  # Adjust sleep time based on your file size and network speed
+            while [ ! -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; do
+              echo "Waiting for JAR file to appear..."
+              sleep 5
+            done
+            echo "File upload completed."
 
             # Stop old application running on port 8081
             echo "Checking for existing application on port 8081..."
