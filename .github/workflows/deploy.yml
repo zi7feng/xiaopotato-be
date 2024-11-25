@@ -43,6 +43,13 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
           port: 22                                   # Default SSH port, change if needed
           script: |
+            # Upload the new JAR file to the server's home directory (~)
+            echo "Uploading new JAR file to the home directory..."
+            scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
+            
+            echo "Waiting for file upload to complete..."
+            sleep 120  # Adjust sleep time based on your file size and network speed
+
             # Stop old application running on port 8081
             echo "Checking for existing application on port 8081..."
             PID=$(lsof -t -i:8081)
@@ -55,11 +62,6 @@ jobs:
 
             # Stop old application if it's running in a screen session
             screen -S springboot-app -X quit || true
-            
-            # Upload the new JAR file to the server's home directory (~)
-            echo "Uploading new JAR file to the home directory..."
-            scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
-  
 
             # Create a script to run the application
             echo "Creating startup script..."
@@ -70,10 +72,9 @@ jobs:
             java -Dspring.profiles.active=prod \
                  -Daliyun.accessKeyId=\$ALIYUN_ACCESS_KEY_ID \
                  -Daliyun.accessKeySecret=\$ALIYUN_ACCESS_KEY_SECRET \
-                 -jar xiao-potato-0.0.1-SNAPSHOT.jar
+                 -jar ~/xiao-potato-0.0.1-SNAPSHOT.jar
             EOF
             chmod +x /tmp/start-app.sh
 
             # Start the application in a new screen session
             screen -dmS springboot-app /tmp/start-app.sh
-          
