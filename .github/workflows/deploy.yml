@@ -45,20 +45,20 @@ jobs:
           script: |
             # Stop old application
             screen -S springboot-app -X quit || true
-            
-            # Export Aliyun OSS credentials as environment variables
-            echo "Exporting Aliyun OSS credentials..."
+
+            # Create a script to run the application
+            echo "Creating startup script..."
+            cat <<EOF > /tmp/start-app.sh
+            #!/bin/bash
             export ALIYUN_ACCESS_KEY_ID=${{ secrets.ALIYUN_ACCESS_KEY_ID }}
             export ALIYUN_ACCESS_KEY_SECRET=${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
-            echo "Aliyun credentials exported."
-            
-            # Start new application
-            screen -dmS springboot-app
-            screen -S springboot-app -X stuff 'java -Dspring.profiles.active=prod \
-              -Daliyun.accessKeyId=${ALIYUN_ACCESS_KEY_ID} \
-              -Daliyun.accessKeySecret=${ALIYUN_ACCESS_KEY_SECRET} \
-              -jar xiao-potato-0.0.1-SNAPSHOT.jar\n'
-            
-            # exit current screen session
-            sleep 2
-            screen -S springboot-app -X stuff $'\003'
+            java -Dspring.profiles.active=prod \
+                 -Daliyun.accessKeyId=\$ALIYUN_ACCESS_KEY_ID \
+                 -Daliyun.accessKeySecret=\$ALIYUN_ACCESS_KEY_SECRET \
+                 -jar xiao-potato-0.0.1-SNAPSHOT.jar
+            EOF
+            chmod +x /tmp/start-app.sh
+
+            # Start the application in a new screen session
+            screen -dmS springboot-app /tmp/start-app.sh
+          
