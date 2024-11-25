@@ -43,6 +43,9 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
           port: 22                                   # Default SSH port, change if needed
           script: |
+            
+            # Change to the workspace directory
+            cd ${{ github.workspace }}
             # Remove old JAR file if it exists
             echo "Deleting old JAR file if it exists..."
             sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar"
