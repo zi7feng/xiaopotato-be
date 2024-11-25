@@ -43,34 +43,39 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
           port: 22                                   # Default SSH port, change if needed
           script: |
-            # Delete old jar
-            rm xiao-potato-0.0.1-SNAPSHOT.jar
+            # Remove old JAR file if it exists
+            echo "Deleting old JAR file if it exists..."
+            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar"
             
-            # Upload the new JAR file to the server's home directory (~)
+            # Upload the new JAR file
             echo "Uploading new JAR file to the home directory..."
-            scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
-            
+            sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
+
+            # Wait for the file to appear
+            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
             while [ ! -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; do
-              echo "Waiting for JAR file to appear..."
+              echo 'Waiting for JAR file to appear...'
               sleep 5
             done
-            echo "File upload completed."
+            echo 'File upload completed.'
+            "
 
             # Stop old application running on port 8081
             echo "Checking for existing application on port 8081..."
-            PID=$(lsof -t -i:8081)
-            if [ ! -z "$PID" ]; then
-              echo "Killing process $PID on port 8081"
-              kill -9 $PID
+            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
+            PID=\$(lsof -t -i:8081)
+            if [ ! -z \"\$PID\" ]; then
+              echo 'Killing process \$PID on port 8081'
+              kill -9 \$PID
             else
-              echo "No process running on port 8081"
+              echo 'No process running on port 8081'
             fi
-
-            # Stop old application if it's running in a screen session
             screen -S springboot-app -X quit || true
+            "
 
             # Create a script to run the application
             echo "Creating startup script..."
+            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
             cat <<EOF > /tmp/start-app.sh
             #!/bin/bash
             export ALIYUN_ACCESS_KEY_ID=${{ secrets.ALIYUN_ACCESS_KEY_ID }}
@@ -81,6 +86,9 @@ jobs:
                  -jar ~/xiao-potato-0.0.1-SNAPSHOT.jar
             EOF
             chmod +x /tmp/start-app.sh
+            "
 
             # Start the application in a new screen session
+            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
             screen -dmS springboot-app /tmp/start-app.sh
+            "
