@@ -56,11 +56,12 @@ jobs:
             # Stop old application if it's running in a screen session
             screen -S springboot-app -X quit || true
             
-             # Upload the new JAR to the root directory
-            echo "Uploading new JAR file to /root/..."
-            scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:/root/
+            # Upload the new JAR file to the server's home directory (~)
+            echo "Uploading new JAR file to the home directory..."
+            scp target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
+  
 
-            # Create a script to run the application
+  # Create a script to run the application
             echo "Creating startup script..."
             cat <<EOF > /tmp/start-app.sh
             #!/bin/bash
