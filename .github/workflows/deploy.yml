@@ -65,6 +65,12 @@ jobs:
       
 
       # Deploy to server using SSH and password
+      - name: Set Full Path for JAR File
+        id: jar_path
+        run: |
+          echo "JAR_FILE_PATH=${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar" >> $GITHUB_ENV
+          echo "JAR_FILE_PATH set to: ${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar"
+
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.8
         with:
@@ -73,19 +79,20 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}
           port: 22
           script: |
-            # Remove old JAR file if it exists
+            echo "Deploying using JAR file path: $JAR_FILE_PATH"
+
+            # Remove old JAR file
             echo "Deleting old JAR file if it exists on the server..."
             sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar"
 
-            # Upload the new JAR file
-            echo "Uploading new JAR file to the server's home directory..."
-            sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no ${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
+            # Upload new JAR file
+            echo "Uploading new JAR file to server..."
+            sshpass -p "${{ secrets.POTATO_KEY }}" scp -o StrictHostKeyChecking=no $JAR_FILE_PATH ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }}:~
 
-            # Verify upload success on the server
-            echo "Verifying that the JAR file was uploaded successfully..."
+            # Verify file upload
+            echo "Verifying upload..."
             sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
-             # Wait for the file to appear
-            sshpass -p "${{ secrets.POTATO_KEY }}" ssh -o StrictHostKeyChecking=no ${{ secrets.POTATO_USER }}@${{ secrets.POTATO_HOST }} "
+            
             while [ ! -f ~/xiao-potato-0.0.1-SNAPSHOT.jar ]; do
               echo 'Waiting for JAR file to appear...'
               sleep 5
