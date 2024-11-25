@@ -50,6 +50,17 @@ jobs:
             exit 1
           fi
 
+
+      - name: Verify JAR file existence
+        run: |
+          echo "Verifying JAR file..."
+          ls -l ${{ github.workspace }}/target
+          if [ ! -f ${{ github.workspace }}/target/xiao-potato-0.0.1-SNAPSHOT.jar ]; then
+            echo "Error: JAR file not found in target directory!"
+            exit 1
+          fi
+          echo "JAR file is present."
+
       # Deploy to server using SSH and password
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.8
