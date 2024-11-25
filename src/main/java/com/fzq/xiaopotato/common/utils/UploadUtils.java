@@ -13,11 +13,16 @@ public class UploadUtils {
     public static final String ALI_DOMAIN = "https://fzqqq-test.oss-us-east-1.aliyuncs.com/";
 
     public static final String END_POINT = "http://oss-us-east-1.aliyuncs.com";
-
-    public static final String ACCESS_KEY_ID = "LTAI5t9j3DW7ZSvuBEirhw5V";
-    public static final String ACCESS_KEY_SECRET = "pVhaGprnUdGPCjN8O4VYzJHkMw70VO";
     public static final String BUCKET_NAME = "fzqqq-test";
+
+    private static final String ACCESS_KEY_ID = System.getenv("ALIYUN_ACCESS_KEY_ID");
+    private static final String ACCESS_KEY_SECRET = System.getenv("ALIYUN_ACCESS_KEY_SECRET");
+
     public static String uploadImage(MultipartFile file) throws IOException {
+
+        if (ACCESS_KEY_ID == null || ACCESS_KEY_SECRET == null) {
+            throw new IllegalStateException("Aliyun OSS credentials are not set in the environment variables.");
+        }
         // file name generator
         String originalFileName = file.getOriginalFilename();
         String ext = "." + FilenameUtils.getExtension(originalFileName);

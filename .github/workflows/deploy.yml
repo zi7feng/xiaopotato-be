@@ -1,0 +1,63 @@
+name: Deploy Spring Boot Application
+
+on:
+  push:
+    branches:
+      - main  # trigger when merge to main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # check out code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # set java environment
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      # set up maven cache
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven
+
+      # package
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
+      # connect to server using ssh
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.POTATO_HOST }}
+          username: ${{ secrets.POTATO_USER }}
+          key: ${{ secrets.POTATO_KEY }}
+          script: |
+            # Stop old application
+            screen -S springboot-app -X quit || true
+            
+            # Export Aliyun OSS credentials as environment variables
+            echo "Exporting Aliyun OSS credentials..."
+            export ALIYUN_ACCESS_KEY_ID=${{ secrets.ALIYUN_ACCESS_KEY_ID }}
+            export ALIYUN_ACCESS_KEY_SECRET=${{ secrets.ALIYUN_ACCESS_KEY_SECRET }}
+            echo "Aliyun credentials exported."
+            
+            # Start new application
+            screen -dmS springboot-app
+            screen -S springboot-app -X stuff 'java -Dspring.profiles.active=prod \
+              -Daliyun.accessKeyId=${ALIYUN_ACCESS_KEY_ID} \
+              -Daliyun.accessKeySecret=${ALIYUN_ACCESS_KEY_SECRET} \
+              -jar /path/to/your/application.jar\n'
+            
+            # exit current screen session
+            sleep 2
+            screen -S springboot-app -X stuff $'\003'
