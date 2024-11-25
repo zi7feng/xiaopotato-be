@@ -6,7 +6,6 @@ public class PageResponse<T> {
     private long total;
     private List<T> records;
 
-    // 标准的getters和setters
     public long getTotal() {
         return total;
     }
