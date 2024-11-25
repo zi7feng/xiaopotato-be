@@ -34,6 +34,7 @@ public class XiaopotatoApplication {
         try {
             socketIOServer.start();
             logger.info("Socket.IO server started successfully on port 8081");
+            logger.error("test deploy");
         } catch (Exception e) {
             logger.error("Failed to start Socket.IO server: ", e);
         }
