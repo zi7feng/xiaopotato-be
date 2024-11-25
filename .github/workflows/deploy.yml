@@ -3,25 +3,25 @@ name: Deploy Spring Boot Application
 on:
   push:
     branches:
-      - main  # trigger when merge to main
+      - main  # Trigger when merging to the main branch
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # check out code
+      # Check out the code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # set java environment
+      # Set up Java environment
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      # set up maven cache
+      # Set up Maven cache
       - name: Cache Maven dependencies
         uses: actions/cache@v3
         with:
@@ -30,17 +30,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven
 
-      # package
+      # Build the application
       - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      # connect to server using ssh
+      # Deploy to server using SSH and password
       - name: Deploy to Server
         uses: appleboy/ssh-action@v0.1.8
         with:
-          host: ${{ secrets.POTATO_HOST }}
-          username: ${{ secrets.POTATO_USER }}
-          key: ${{ secrets.POTATO_KEY }}
+          host: ${{ secrets.POTATO_HOST }}           # Server hostname or IP
+          username: ${{ secrets.POTATO_USER }}       # SSH username
+          password: ${{ secrets.POTATO_KEY }}        # SSH password stored in secrets
+          port: 22                                   # Default SSH port, change if needed
           script: |
             # Stop old application
             screen -S springboot-app -X quit || true
@@ -56,7 +57,7 @@ jobs:
             screen -S springboot-app -X stuff 'java -Dspring.profiles.active=prod \
               -Daliyun.accessKeyId=${ALIYUN_ACCESS_KEY_ID} \
               -Daliyun.accessKeySecret=${ALIYUN_ACCESS_KEY_SECRET} \
-              -jar /path/to/your/application.jar\n'
+              -jar xiao-potato-0.0.1-SNAPSHOT.jar\n'
             
             # exit current screen session
             sleep 2
