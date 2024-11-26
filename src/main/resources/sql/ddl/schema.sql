@@ -172,7 +172,7 @@ CREATE TABLE POTATO.Email (
                               from_user VARCHAR(255) NOT NULL COMMENT 'From user ID',
                               to_user   VARCHAR(255) NOT NULL COMMENT 'To user',
                               subject      VARCHAR(255) NOT NULL COMMENT 'Subject of E-mail',
-                              content      VARCHAR(255) NOT NULL COMMENT 'Content of E-mail',
+                              content      VARCHAR(8192) NOT NULL COMMENT 'Content of E-mail',
                               create_time  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
                               is_delete      TINYINT DEFAULT 0 NOT NULL COMMENT 'Indicates if the tag has been deleted (0 - Not deleted, 1 - Deleted)'
 );

@@ -110,11 +110,15 @@ public class EmailServiceImpl extends ServiceImpl<EmailMapper, Email>
             queryWrapper.like("content", emailQueryDTO.getContent()); // 按 content 模糊查询
         }
 
+        queryWrapper.orderByDesc("create_time");
+
         IPage<Email> emailPage = emailMapper.selectPage(page, queryWrapper);
 
 
         IPage<EmailVO> emailVOPage = emailPage.convert(email -> {
             EmailVO emailVO = new EmailVO();
+            emailVO.setEmailId(email.getEmailId());
+            emailVO.setUserId(email.getUserId());
             emailVO.setFromUser(email.getFromUser());
             emailVO.setToUser(email.getToUser());
             emailVO.setSubject(email.getSubject());
