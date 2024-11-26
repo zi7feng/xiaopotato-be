@@ -9,6 +9,8 @@ import java.util.Date;
 @Data
 public class EmailVO implements Serializable {
     private static final long serialVersionUID = 1L;
+    private Long emailId;
+    private Long userId;
     private String fromUser;
     private String toUser;
     private String subject;
