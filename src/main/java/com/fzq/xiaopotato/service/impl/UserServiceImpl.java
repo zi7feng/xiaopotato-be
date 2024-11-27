@@ -28,6 +28,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.util.List;
@@ -281,6 +282,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    @Transactional
     public int deleteUserById(IdDTO idDTO, HttpServletRequest request) {
         UserVO user = getCurrentUser(request);
         if (user == null) {
@@ -294,13 +296,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 new QueryWrapper<Post>()
                         .inSql("id", "SELECT post_id FROM UserPost WHERE user_id = " + idDTO.getId())
         );
-        log.error("post set to 1 start");
         for (Post post : userPosts) {
-            post.setIsDelete(1);
-            log.error("post" + post.getId() + "'s delete set to 1");
-            postMapper.updateById(post);
+            postMapper.deleteById(post);
         }
-        log.error("post set to 1 end");
 
         return userMapper.deleteById(idDTO.getId());
     }
