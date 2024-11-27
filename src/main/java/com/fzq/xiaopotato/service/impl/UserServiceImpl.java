@@ -294,11 +294,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                 new QueryWrapper<Post>()
                         .inSql("id", "SELECT post_id FROM UserPost WHERE user_id = " + idDTO.getId())
         );
-
+        log.error("post set to 1 start");
         for (Post post : userPosts) {
             post.setIsDelete(1);
+            log.error("post" + post.getId() + "'s delete set to 1");
             postMapper.updateById(post);
         }
+        log.error("post set to 1 end");
+
         return userMapper.deleteById(idDTO.getId());
     }
 
