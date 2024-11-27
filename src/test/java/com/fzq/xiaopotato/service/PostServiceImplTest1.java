@@ -29,7 +29,7 @@
 //@SpringBootTest
 //
 //@ExtendWith(MockitoExtension.class)
-//public class PostServiceImplTest {
+//public class PostServiceImplTest1 {
 //
 //    @Autowired
 //    private PostServiceImpl postService;
