@@ -149,6 +149,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
         if (!StringUtils.isEmpty(genre) && !genre.equalsIgnoreCase("all")) {
             queryWrapper.eq("post_genre", genre);
         }
+        queryWrapper.eq("is_delete", 0);
         List<Post> allPosts;
         if (!StringUtils.isEmpty(sort)) {
             // 按照 updateTime 排序
