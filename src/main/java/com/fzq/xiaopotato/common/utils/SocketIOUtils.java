@@ -86,6 +86,9 @@ public class SocketIOUtils {
 //        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
 
         String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
+        if (token != null && token.startsWith("Bearer ")) {
+            token = token.substring(7).trim();
+        }
         if (token != null) {
             Claims claims = jwtUtils.getClaimsFromToken(token);
             Long userId = claims.get("id", Long.class);
