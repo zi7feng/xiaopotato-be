@@ -73,6 +73,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private NotificationMapper notificationMapper;
 
+    @Autowired
+    private PostMapper postMapper;
+
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
 
@@ -285,6 +288,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         if (!ADMIN_ROLE.equals(user.getUserRole())) {
             throw new BusinessException(ErrorCode.NO_AUTH, "Only Admin can delete user.");
+        }
+
+        List<Post> userPosts = postMapper.selectList(
+                new QueryWrapper<Post>()
+                        .inSql("id", "SELECT post_id FROM UserPost WHERE user_id = " + idDTO.getId())
+        );
+
+        for (Post post : userPosts) {
+            post.setIsDelete(1);
+            postMapper.updateById(post);
         }
         return userMapper.deleteById(idDTO.getId());
     }
