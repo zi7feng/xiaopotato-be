@@ -53,7 +53,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // get JWT from the Authorization header
-        String token = request.getHeader("Authorization");
+        String token = java.net.URLDecoder.decode(request.getHeader("Authorization"), "UTF-8");
 
         // validate JWT
         if (token != null && token.startsWith("Bearer ")) {
