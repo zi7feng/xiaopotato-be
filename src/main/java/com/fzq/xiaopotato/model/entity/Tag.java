@@ -1,9 +1,7 @@
 package com.fzq.xiaopotato.model.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import java.io.Serializable;
 import java.util.Date;
 import lombok.Data;
@@ -42,6 +40,7 @@ public class Tag implements Serializable {
     /**
      * Indicates if the tag has been deleted (0 - Not deleted, 1 - Deleted)
      */
+    @TableLogic
     @TableField(value = "is_delete")
     private Integer isDelete;
 
