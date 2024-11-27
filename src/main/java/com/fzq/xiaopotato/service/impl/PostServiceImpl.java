@@ -213,9 +213,14 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setCommentCount(getCommentCountByPostId(idDTO.getId()));
 
                     // get creator's info
-                    Long userId = userPostMapper.selectOne(
+                    UserPost userPost = userPostMapper.selectOne(
                             new QueryWrapper<UserPost>().eq("post_id", post.getId())
-                    ).getUserId();
+                    );
+                    if (userPost == null) {
+                        log.error("Null creator for post: " + post.getId());
+                        throw new BusinessException(ErrorCode.NULL_ERROR);
+                    }
+                    Long userId = userPost.getUserId();
                     if (userId != null) {
                         User userEntity = userMapper.selectById(userId);
                         if (userEntity != null) {
