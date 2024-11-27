@@ -81,7 +81,6 @@ public class SocketIOUtils {
         }
     }
 
-
     public void onDisconnect(SocketIOClient client) {
 //        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
 
