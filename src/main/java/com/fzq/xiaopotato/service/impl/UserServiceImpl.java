@@ -297,6 +297,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                         .inSql("id", "SELECT post_id FROM UserPost WHERE user_id = " + idDTO.getId())
         );
         for (Post post : userPosts) {
+            // delete file in oss
+            if (post.getPostImage() != null) {
+                String imageUrl = post.getPostImage();
+                UploadUtils.deleteImage(imageUrl);
+            }
             postMapper.deleteById(post);
         }
 
