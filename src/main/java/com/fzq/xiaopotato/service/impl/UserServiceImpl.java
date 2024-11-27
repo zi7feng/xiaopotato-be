@@ -290,15 +290,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.NO_AUTH, "Only Admin can delete user.");
         }
 
-        List<Post> userPosts = postMapper.selectList(
-                new QueryWrapper<Post>()
-                        .inSql("id", "SELECT post_id FROM UserPost WHERE user_id = " + idDTO.getId())
-        );
 
-        for (Post post : userPosts) {
-            post.setIsDelete(1);
-            postMapper.updateById(post);
-        }
         return userMapper.deleteById(idDTO.getId());
     }
 
