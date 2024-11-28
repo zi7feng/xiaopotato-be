@@ -2,12 +2,14 @@ package com.fzq.xiaopotato.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.esotericsoftware.minlog.Log;
 import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.common.utils.SocketIOUtils;
 import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.mapper.SavesMapper;
 import com.fzq.xiaopotato.mapper.UserPostMapper;
 import com.fzq.xiaopotato.model.dto.common.IdDTO;
+import com.fzq.xiaopotato.model.entity.Likes;
 import com.fzq.xiaopotato.model.entity.Saves;
 import com.fzq.xiaopotato.model.entity.Saves;
 import com.fzq.xiaopotato.model.entity.UserPost;
@@ -17,11 +19,14 @@ import com.fzq.xiaopotato.service.SavesService;
 import com.fzq.xiaopotato.mapper.SavesMapper;
 import com.fzq.xiaopotato.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.TimeUnit;
 
 import static com.fzq.xiaopotato.common.NotificationType.LIKE;
 import static com.fzq.xiaopotato.common.NotificationType.SAVE;
@@ -47,40 +52,62 @@ public class SavesServiceImpl extends ServiceImpl<SavesMapper, Saves>
     @Autowired
     private UserPostMapper userPostMapper;
 
+    @Autowired
+    private RedissonClient redissonClient;
+
     @Override
     public boolean saveByPostId(IdDTO idDTO, HttpServletRequest request) {
+
         UserVO user = userService.getCurrentUser(request);
         if (user == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         long userId = user.getId();
         long postId = idDTO.getId();
+        String lockKey = "user:save:" + userId + ":" + postId;
+        RLock lock = redissonClient.getLock(lockKey);
+        try {
+            while (true) {
+                if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
+                    Log.info("getLock: " + Thread.currentThread().getId());
+                    QueryWrapper<UserPost> userPostQuery = new QueryWrapper<>();
+                    userPostQuery.eq("post_id", postId);
+                    UserPost userPost = userPostMapper.selectOne(userPostQuery);
+                    if (userPost == null) {
+                        throw new BusinessException(ErrorCode.PARAMS_ERROR, "Post creator not found");
+                    }
 
-        QueryWrapper<UserPost> userPostQuery = new QueryWrapper<>();
-        userPostQuery.eq("post_id", postId);
-        UserPost userPost = userPostMapper.selectOne(userPostQuery);
-        if (userPost == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Post creator not found");
-        }
+                    long creatorId = userPost.getUserId();
 
-        long creatorId = userPost.getUserId();
+                    boolean isSaved = isPostSavedByUser(userId, postId);
+                    if (!isSaved) {
+                        Saves saves = new Saves();
+                        saves.setUserId(userId);
+                        saves.setPostId(postId);
+                        savesMapper.insert(saves);
+                        if (user.getId() != creatorId) {
+                            sendSaveNotification(user, creatorId);
+                        }
 
-        boolean isSaved = isPostSavedByUser(userId, postId);
-        if (!isSaved) {
-            Saves saves = new Saves();
-            saves.setUserId(userId);
-            saves.setPostId(postId);
-            savesMapper.insert(saves);
-            if (user.getId() != creatorId) {
-                sendSaveNotification(user, creatorId);
+                        return true;
+                    } else {
+                        QueryWrapper<Saves> queryWrapper = new QueryWrapper<>();
+                        queryWrapper.eq("user_id", userId).eq("post_id", postId);
+                        savesMapper.delete(queryWrapper);
+                        return false;
+                    }
+                }
+            }
+        } catch (InterruptedException e) {
+            log.error(Thread.currentThread().getId() + " get lock failed");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "get lock failed");
+        } finally {
+            // can only release itself lock
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+                Log.info("release lock: {}", String.valueOf(Thread.currentThread().getId()));
             }
 
-            return true;
-        } else {
-            QueryWrapper<Saves> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("user_id", userId).eq("post_id", postId);
-            savesMapper.delete(queryWrapper);
-            return false;
         }
 
     }

@@ -70,8 +70,6 @@ public class LikesServiceImpl extends ServiceImpl<LikesMapper, Likes>
             while (true) {
                 if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
                     Log.info("getLock: " + Thread.currentThread().getId());
-
-
                     QueryWrapper<UserPost> userPostQuery = new QueryWrapper<>();
                     userPostQuery.eq("post_id", postId);
                     UserPost userPost = userPostMapper.selectOne(userPostQuery);

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.esotericsoftware.minlog.Log;
 import com.fzq.xiaopotato.common.*;
 import com.fzq.xiaopotato.common.utils.*;
 import com.fzq.xiaopotato.exception.BusinessException;
@@ -22,6 +23,8 @@ import com.fzq.xiaopotato.service.*;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -33,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static com.fzq.xiaopotato.constant.UserConstant.ADMIN_ROLE;
@@ -80,11 +84,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private PostMapper postMapper;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+    @Autowired
+    private RedissonClient redissonClient;
 
+    private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
 
     @Override
     public Long userRegister(UserRegisterDTO userRegisterDTO) {
+
         String firstName = userRegisterDTO.getFirstName();
         String lastName = userRegisterDTO.getLastName();
         String userAccount = userRegisterDTO.getUserAccount();
@@ -94,7 +101,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         String phone = userRegisterDTO.getPhone();
 
         String checkPassword = userRegisterDTO.getCheckPassword();
-
         if (StringUtils.isAnyBlank(firstName, lastName, userAccount, userPassword, checkPassword)) {
             throw new BusinessException(ErrorCode.NULL_ERROR);
         }
@@ -114,33 +120,56 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "The two passwords are not matched");
         }
 
+        String lockKey = "user:register:" + userAccount;
+        RLock lock = redissonClient.getLock(lockKey);
+        try {
+            while (true) {
+                if (lock.tryLock(0, -1, TimeUnit.MILLISECONDS)) {
+                    Log.info("getLock: " + Thread.currentThread().getId());
+                    // duplicate account
+                    QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("user_account", userAccount);
+                    queryWrapper.eq("is_delete", 0);
+                    long count = userMapper.selectCount(queryWrapper);
 
-        // duplicate account
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_account", userAccount);
-        queryWrapper.eq("is_delete", 0);
-        long count = userMapper.selectCount(queryWrapper);
+                    if (count > 0) {
+                        throw new BusinessException(ErrorCode.PARAMS_ERROR, "Account already exists.");
+                    }
 
-        if (count > 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "Account already exists.");
+                    // encrypt
+                    String encryptPassword = PasswordUtils.encryptPassword(userPassword, SALT);        // is account exist
+                    User user = new User();
+                    user.setUserAccount(userAccount);
+                    user.setFirstName(firstName);
+                    user.setLastName(lastName);
+                    user.setUserPassword(encryptPassword);
+                    user.setEmail(email);
+                    user.setGender(gender);
+                    user.setPhone(phone);
+                    boolean saveResult = this.save(user);
+                    if (saveResult) {
+                        return user.getId();
+                    } else {
+                        throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Register failed.");
+                    }
+                }
+            }
+        } catch (InterruptedException e) {
+            log.error(Thread.currentThread().getId() + " get lock failed");
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "get lock failed");
+        } finally {
+            // can only release itself lock
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+                Log.info("release lock: {}", String.valueOf(Thread.currentThread().getId()));
+            }
+
         }
 
-        // encrypt
-        String encryptPassword = PasswordUtils.encryptPassword(userPassword, SALT);        // is account exist
-        User user = new User();
-        user.setUserAccount(userAccount);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUserPassword(encryptPassword);
-        user.setEmail(email);
-        user.setGender(gender);
-        user.setPhone(phone);
-        boolean saveResult = this.save(user);
-        if (saveResult) {
-            return user.getId();
-        } else {
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "Register failed.");
-        }
+
+
+
+
     }
 
     @Override
