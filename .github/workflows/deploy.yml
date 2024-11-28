@@ -82,13 +82,14 @@ jobs:
           script: |
             # Remove old JAR
             rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar
-
+            screen -S springboot-app -X quit || true
+            sleep 10
             # Stop existing application
             PID=$(lsof -t -i:8081 || true)
             if [ ! -z "$PID" ]; then
               kill -9 $PID || true
             fi
-            screen -S springboot-app -X quit || true
+           
 
             # Create startup script
             cat > /tmp/start-app.sh << 'EOF'
