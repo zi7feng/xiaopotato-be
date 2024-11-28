@@ -75,7 +75,7 @@ public class SocketIOUtils {
             unreadNotifications.forEach(notification -> client.sendEvent("notification", notification));
 
             // 更新所有通知为已读状态
-//            notificationService.markNotificationsAsRead(userId);
+            notificationService.markNotificationsAsPush(userId);
             log.info("Client connected: {}", client.getSessionId());
 
         }

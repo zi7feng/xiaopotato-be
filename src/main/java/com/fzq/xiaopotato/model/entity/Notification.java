@@ -75,6 +75,9 @@ public class Notification implements Serializable {
     @TableField(value = "is_read")
     private Integer isRead; // 使用 Integer 类型表示 0 = 未读, 1 = 已读
 
+    @TableField(value = "is_push")
+    private Integer isPush; // 使用 Integer 类型表示 0 = 未推, 1 = 已推
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

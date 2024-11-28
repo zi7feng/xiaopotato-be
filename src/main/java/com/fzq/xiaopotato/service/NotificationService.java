@@ -22,5 +22,7 @@ public interface NotificationService extends IService<Notification> {
     // 标记通知为已读
     void markNotificationsAsRead(Long userId);
 
+    void markNotificationsAsPush(Long userId) ;
+
     List<NotificationVO> getAllNotifications(Long userId);
 }
