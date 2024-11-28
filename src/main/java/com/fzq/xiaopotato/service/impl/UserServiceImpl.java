@@ -512,7 +512,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 设置返回的分页对象
         Page<NotificationVO> resultPage = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize(), notificationPage.getTotal());
         resultPage.setRecords(notificationVOList);
+        log.error("=================================");
         notificationService.markNotificationsAsRead(userId);
+        log.error("=================================");
 
         return resultPage;
 
