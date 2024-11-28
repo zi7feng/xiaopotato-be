@@ -89,6 +89,8 @@ jobs:
             if [ ! -z "$PID" ]; then
               kill -9 $PID || true
             fi
+            echo "Force releasing port 8081..."
+            fuser -k 8081/tcp
            
 
             # Create startup script
