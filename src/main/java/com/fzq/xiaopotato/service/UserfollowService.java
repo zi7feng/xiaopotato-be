@@ -14,4 +14,6 @@ public interface UserfollowService extends IService<Userfollow> {
     boolean followByUserId(IdDTO idDTO, HttpServletRequest request);
 
     boolean isFollowedByUser(IdDTO idDTO, HttpServletRequest request);
-}
+    boolean isFollowed(long followerId, long followedId);
+
+    }

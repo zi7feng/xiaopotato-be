@@ -99,7 +99,8 @@ public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfol
 
     }
 
-    private boolean isFollowed(long followerId, long followedId) {
+    @Override
+    public boolean isFollowed(long followerId, long followedId) {
         QueryWrapper<Userfollow> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("follower_id", followerId).eq("followed_id", followedId);
         return userfollowMapper.selectOne(queryWrapper) != null;

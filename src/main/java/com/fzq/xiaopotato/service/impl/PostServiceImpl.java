@@ -230,6 +230,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                             postVO.setCreatorLastName(userEntity.getLastName());
                             postVO.setCreatorAccount(userEntity.getUserAccount());
                             postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                            postVO.setFollowed(userfollowService.isFollowed(user.getId(), userEntity.getId()));
                         }
                     }
 
@@ -244,7 +245,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
 
     @Override
     public PostVO selectPostById(IdDTO idDTO, HttpServletRequest request) {
-        if (userService.getCurrentUser(request) == null) {
+        UserVO user = userService.getCurrentUser(request);
+        if (user == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN);
         }
         Long postId = idDTO.getId();
@@ -278,6 +280,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                 postVO.setCreatorLastName(userEntity.getLastName());
                 postVO.setCreatorAccount(userEntity.getUserAccount());
                 postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                postVO.setFollowed(userfollowService.isFollowed(user.getId(), userEntity.getId()));
+
             }
         }
         return postVO;
@@ -442,6 +446,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                             postVO.setCreatorLastName(userEntity.getLastName());
                             postVO.setCreatorAccount(userEntity.getUserAccount());
                             postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                            postVO.setFollowed(userfollowService.isFollowed(user.getId(), userEntity.getId()));
                         }
                     }
                     return postVO;
@@ -512,6 +517,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setCreatorLastName(userEntity.getLastName());
                     postVO.setCreatorAccount(userEntity.getUserAccount());
                     postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                    postVO.setFollowed(userfollowService.isFollowed(user.getId(), userEntity.getId()));
                 }
             }
             return postVO;
@@ -566,6 +572,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
                     postVO.setCreatorLastName(userEntity.getLastName());
                     postVO.setCreatorAccount(userEntity.getUserAccount());
                     postVO.setCreatorAvatar(userEntity.getUserAvatar());
+                    postVO.setFollowed(userfollowService.isFollowed(user.getId(), userEntity.getId()));
+
                 }
             }
             return postVO;
