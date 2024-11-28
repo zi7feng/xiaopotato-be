@@ -115,6 +115,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // duplicate account
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
+        queryWrapper.eq("is_delete", 0);
         long count = userMapper.selectCount(queryWrapper);
 
         if (count > 0) {
