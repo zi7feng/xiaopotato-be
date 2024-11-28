@@ -60,7 +60,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_id", userId)
                     .eq("is_read", 0)
-                    .orderByDesc("create_time"); // 假设有创建时间字段
+                    .orderByDesc("create_time");
 
             return notificationMapper.selectList(queryWrapper)
                     .stream()
@@ -82,7 +82,6 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
         Assert.notNull(userId, "User ID cannot be null");
 
         try {
-            // 使用批量更新而不是逐个更新
             QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_id", userId).eq("is_read", 0);
 
