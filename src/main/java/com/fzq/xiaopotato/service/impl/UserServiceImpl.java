@@ -75,6 +75,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private NotificationMapper notificationMapper;
 
     @Autowired
+    private NotificationService notificationService;
+
+    @Autowired
     private PostMapper postMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
@@ -310,6 +313,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
+    public Long getNotificationCount(HttpServletRequest request) {
+        UserVO user = getCurrentUser(request);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.NOT_LOGIN, "user not logged in");
+        }
+        Long userId = user.getId();
+
+
+        QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("user_id", userId)
+                .eq("is_read", 0);
+
+        return notificationMapper.selectCount(queryWrapper);
+
+
+    }
+
+    @Override
     public boolean isAdmin(UserVO user) {
         if (user == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -489,6 +510,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 设置返回的分页对象
         Page<NotificationVO> resultPage = new Page<>(pageDTO.getCurrentPage(), pageDTO.getPageSize(), notificationPage.getTotal());
         resultPage.setRecords(notificationVOList);
+        notificationService.markNotificationsAsRead(userId);
 
         return resultPage;
 

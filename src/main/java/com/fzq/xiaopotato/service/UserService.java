@@ -45,4 +45,6 @@ public interface UserService extends IService<User> {
 
     int deleteUserById(IdDTO idDTO, HttpServletRequest request);
 
+    Long getNotificationCount(HttpServletRequest request);
+
 }
