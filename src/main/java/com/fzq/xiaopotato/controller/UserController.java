@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -190,6 +191,15 @@ public class UserController {
         }
         IPage<NotificationVO> result = userService.listNotificationByPage(pageDTO, request);
         return ResultUtils.success(result);
+    }
+
+    @Operation(summary = "Get Unread notification counts")
+    @GetMapping("/getNotificationCountById")
+    public BaseResponse<Long> getNotificationCount(IdDTO idDTO, HttpServletRequest request) {
+        if (idDTO == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR, "Null id dto.");
+        }
+        return ResultUtils.success(userService.getNotificationCount(request));
     }
 
 
