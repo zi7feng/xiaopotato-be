@@ -39,8 +39,6 @@ import static com.fzq.xiaopotato.common.NotificationType.FOLLOW;
 public class UserfollowServiceImpl extends ServiceImpl<UserfollowMapper, Userfollow>
     implements UserfollowService{
 
-
-
     @Autowired
     private UserService userService;
 
