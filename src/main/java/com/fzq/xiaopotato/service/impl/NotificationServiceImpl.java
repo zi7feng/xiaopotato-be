@@ -82,6 +82,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
     public void markNotificationsAsRead(Long userId) {
         Assert.notNull(userId, "User ID cannot be null");
 
+
         try {
             QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_id", userId).eq("is_read", 0);
