@@ -325,7 +325,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("user_id", userId)
                 .eq("is_read", 0);
 
-        return notificationMapper.selectCount(queryWrapper);
+        Long result = notificationMapper.selectCount(queryWrapper);
+        log.error("result of count notification is " + result);
+        return result;
 
 
     }
