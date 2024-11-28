@@ -79,7 +79,6 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markNotificationsAsRead(Long userId) {
-        log.info("markNotificationsAsRead called. Stack trace: ", new Exception("Stack trace"));
         Assert.notNull(userId, "User ID cannot be null");
 
         try {
