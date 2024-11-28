@@ -162,6 +162,7 @@ CREATE TABLE Notification (
                               notification_type VARCHAR(50),
                               create_time DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
                               is_read TINYINT DEFAULT 0,
+                              is_push TINYINT DEFAULT 0,
                               FOREIGN KEY (user_id) REFERENCES User(id) ON DELETE CASCADE
 );
 

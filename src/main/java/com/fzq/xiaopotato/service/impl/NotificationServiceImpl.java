@@ -60,6 +60,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
             queryWrapper.eq("user_id", userId)
                     .eq("is_read", 0)
+                    .eq("is_push", 0)
                     .orderByDesc("create_time");
 
             return notificationMapper.selectList(queryWrapper)
@@ -93,6 +94,27 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             log.info("Marked {} notifications as read for user {}", result, userId);
         } catch (Exception e) {
             log.error("Error marking notifications as read for user {}: {}", userId, e.getMessage(), e);
+            throw new RuntimeException("Error updating notifications", e);
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void markNotificationsAsPush(Long userId) {
+        Assert.notNull(userId, "User ID cannot be null");
+
+        try {
+            QueryWrapper<Notification> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("user_id", userId).eq("is_push", 0);
+
+            Notification updateEntity = new Notification();
+            updateEntity.setIsPush(1);
+
+
+            int result = notificationMapper.update(updateEntity, queryWrapper);
+            log.info("Marked {} notifications as push for user {}", result, userId);
+        } catch (Exception e) {
+            log.error("Error marking notifications as push for user {}: {}", userId, e.getMessage(), e);
             throw new RuntimeException("Error updating notifications", e);
         }
     }

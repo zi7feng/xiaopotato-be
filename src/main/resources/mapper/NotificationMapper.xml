@@ -15,12 +15,13 @@
             <result property="notificationType" column="notification_type" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="isRead" column="is_read" jdbcType="TINYINT"/>
+            <result property="isPush" column="is_push" jdbcType="TINYINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,user_id,source_id,
         first_name,last_name,account,
         avatar,notification_type,create_time,
-        is_read
+        is_read, is_push
     </sql>
 </mapper>
