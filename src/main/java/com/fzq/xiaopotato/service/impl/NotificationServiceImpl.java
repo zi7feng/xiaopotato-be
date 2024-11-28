@@ -88,6 +88,8 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             Notification updateEntity = new Notification();
             updateEntity.setIsRead(1);
 
+
+
             int result = notificationMapper.update(updateEntity, queryWrapper);
             log.error("Marked {} notifications as read for user {}", result, userId);
         } catch (Exception e) {
