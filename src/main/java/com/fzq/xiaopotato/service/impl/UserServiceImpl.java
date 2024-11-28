@@ -115,6 +115,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // duplicate account
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_account", userAccount);
+        queryWrapper.eq("is_delete", 0);
         long count = userMapper.selectCount(queryWrapper);
 
         if (count > 0) {
@@ -297,6 +298,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
                         .inSql("id", "SELECT post_id FROM UserPost WHERE user_id = " + idDTO.getId())
         );
         for (Post post : userPosts) {
+            // delete file in oss
+            if (post.getPostImage() != null) {
+                String imageUrl = post.getPostImage();
+                UploadUtils.deleteImage(imageUrl);
+            }
             postMapper.deleteById(post);
         }
 

@@ -36,8 +36,7 @@ CREATE TABLE IF NOT EXISTS POTATO.User
     status         TINYINT      DEFAULT 0                 NOT NULL COMMENT 'Account Status (0 - Normal, 1 - Blocked)',
     create_time    DATETIME     DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Create Time',
     update_time    DATETIME     DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Update Time',
-    is_delete      TINYINT      DEFAULT 0                 NOT NULL COMMENT 'Is Deleted? (1 - Deleted)',
-    CONSTRAINT uni_userAccount UNIQUE (user_account)
+    is_delete      TINYINT      DEFAULT 0                 NOT NULL COMMENT 'Is Deleted? (1 - Deleted)'
 )
     COMMENT 'User Table';
 
@@ -176,3 +175,5 @@ CREATE TABLE POTATO.Email (
                               create_time  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'Timestamp when the follow action was created',
                               is_delete      TINYINT DEFAULT 0 NOT NULL COMMENT 'Indicates if the tag has been deleted (0 - Not deleted, 1 - Deleted)'
 );
+
+
