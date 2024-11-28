@@ -79,6 +79,7 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void markNotificationsAsRead(Long userId) {
+        log.info("markNotificationsAsRead called. Stack trace: ", new Exception("Stack trace"));
         Assert.notNull(userId, "User ID cannot be null");
 
         try {
@@ -89,9 +90,8 @@ public class NotificationServiceImpl extends ServiceImpl<NotificationMapper, Not
             updateEntity.setIsRead(1);
 
 
-
             int result = notificationMapper.update(updateEntity, queryWrapper);
-            log.error("Marked {} notifications as read for user {}", result, userId);
+            log.info("Marked {} notifications as read for user {}", result, userId);
         } catch (Exception e) {
             log.error("Error marking notifications as read for user {}: {}", userId, e.getMessage(), e);
             throw new RuntimeException("Error updating notifications", e);
