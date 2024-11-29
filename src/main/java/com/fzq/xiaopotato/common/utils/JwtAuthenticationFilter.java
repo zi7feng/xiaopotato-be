@@ -1,5 +1,7 @@
 package com.fzq.xiaopotato.common.utils;
 
+import com.fzq.xiaopotato.common.ErrorCode;
+import com.fzq.xiaopotato.exception.BusinessException;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -53,6 +55,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // get JWT from the Authorization header
+
+        if (request.getHeader("Authorization") == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
+        if (request.getHeader("Authorization") == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
         String token = java.net.URLDecoder.decode(request.getHeader("Authorization"), "UTF-8");
 
         // validate JWT
