@@ -7,6 +7,7 @@ import com.fzq.xiaopotato.mapper.UsertagMapper;
 import com.fzq.xiaopotato.model.entity.Posttag;
 import com.fzq.xiaopotato.model.entity.Tag;
 import com.fzq.xiaopotato.model.entity.Usertag;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -60,9 +61,11 @@ public class TagRecommendationUtils {
         int score = 0;
 
         for (String userTag : userTags) {
+            userTag = StringUtils.upperCase(userTag);
             int minScoreForTag = Integer.MAX_VALUE; // 用于存储该 userTag 与 postTags 的最小得分
 
             for (String postTag : postTags) {
+                postTag = StringUtils.upperCase(postTag);
                 int distance = calculateEditDistance(userTag, postTag);
 
                 // 根据最小编辑距离计算得分，但不累加，只取最小分数
@@ -104,7 +107,7 @@ public class TagRecommendationUtils {
         List<String> userTags = tagMapper.selectList(
                         new QueryWrapper<Tag>().in("id", userTagIds))
                 .stream()
-                .map(Tag::getContent)
+                .map(tag -> tag.getContent().toUpperCase())
                 .collect(Collectors.toList());
 
         Map<Long, Double> postScores = new HashMap<>();
@@ -122,7 +125,7 @@ public class TagRecommendationUtils {
             List<String> postTags = tagMapper.selectList(
                             new QueryWrapper<Tag>().in("id", postTagIds))
                     .stream()
-                    .map(Tag::getContent)
+                    .map(tag -> tag.getContent().toUpperCase())
                     .collect(Collectors.toList());
 
             // 计算相似度得分
