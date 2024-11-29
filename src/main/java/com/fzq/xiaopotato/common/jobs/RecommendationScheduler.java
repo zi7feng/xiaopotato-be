@@ -63,6 +63,14 @@ public class RecommendationScheduler {
     }
     @PostConstruct
     public void onStartup() {
+        try {
+            // 延迟10秒（10000毫秒）执行，等待数据库和其他依赖资源完全初始化
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Startup delay interrupted", e);
+        }
         updateAllUserRecommendations();
     }
+
 }
