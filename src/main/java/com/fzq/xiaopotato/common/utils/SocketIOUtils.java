@@ -2,7 +2,9 @@ package com.fzq.xiaopotato.common.utils;
 
 import com.corundumstudio.socketio.SocketIOClient;
 import com.fzq.xiaopotato.XiaopotatoApplication;
+import com.fzq.xiaopotato.common.ErrorCode;
 import com.fzq.xiaopotato.constant.NotificationConstant;
+import com.fzq.xiaopotato.exception.BusinessException;
 import com.fzq.xiaopotato.model.vo.NotificationVO;
 import com.fzq.xiaopotato.service.NotificationService;
 import io.jsonwebtoken.Claims;
@@ -83,7 +85,9 @@ public class SocketIOUtils {
 
     public void onDisconnect(SocketIOClient client) {
 //        String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
-
+        if (client.getHandshakeData().getSingleUrlParam("token") == null) {
+            throw new BusinessException(ErrorCode.NULL_ERROR);
+        }
         String token = URLDecoder.decode(client.getHandshakeData().getSingleUrlParam("token"), StandardCharsets.UTF_8);
         if (token != null && token.startsWith("Bearer ")) {
             token = token.substring(7).trim();

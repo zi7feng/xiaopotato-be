@@ -112,6 +112,7 @@ public class TagRecommendationUtils {
 
         Map<Long, Double> postScores = new HashMap<>();
 
+
         for (Long postId : postIds) {
             logger.info("Starting calculation on Post: {}", postId);
 
@@ -137,7 +138,7 @@ public class TagRecommendationUtils {
 
             // 计算总分并加上波动系数
             double fluctuationFactor = 0.9 + (Math.random() * 0.2);
-            double totalScore = (  (-0.85) * jaccardSimilarity - 0.15 * editDistanceScore) * fluctuationFactor;
+            double totalScore = ((-0.85) * jaccardSimilarity - 0.15 * editDistanceScore) * fluctuationFactor;
             logger.info("total: {}", totalScore);
 
             postScores.put(postId, totalScore);
