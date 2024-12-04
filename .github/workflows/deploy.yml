@@ -83,7 +83,7 @@ jobs:
             # Remove old JAR
             rm -f ~/xiao-potato-0.0.1-SNAPSHOT.jar
             screen -S springboot-app -X quit || true
-            sleep 30
+            sleep 60
             # Stop existing application
             PID=$(lsof -t -i:8081 || true)
             if [ ! -z "$PID" ]; then
