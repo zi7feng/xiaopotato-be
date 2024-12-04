@@ -144,7 +144,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post>
             queryWrapper.like("post_title", title);
         }
         if (!StringUtils.isEmpty(content)) {
-            queryWrapper.like("post_content", content);
+            queryWrapper.or().like("post_content", content);
         }
         if (!StringUtils.isEmpty(genre) && !genre.equalsIgnoreCase("all")) {
             queryWrapper.eq("post_genre", genre);
