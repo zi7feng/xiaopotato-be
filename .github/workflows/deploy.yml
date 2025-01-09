@@ -136,4 +136,4 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}
           port: 22
           script: |
-            screen -dmS springboot-app /tmp/start-app.sh
+            screen -dmS springboot-app && /tmp/start-app.sh
