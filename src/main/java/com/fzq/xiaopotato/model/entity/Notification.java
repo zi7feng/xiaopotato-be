@@ -33,8 +33,6 @@ public class Notification implements Serializable {
     @TableField(value = "source_id")
     private Long sourceId;
 
-
-
     /**
      * 
      */
