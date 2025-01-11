@@ -136,4 +136,23 @@ jobs:
           password: ${{ secrets.POTATO_KEY }}
           port: 22
           script: |
-            screen -dmS springboot-app && /tmp/start-app.sh
+            screen -dmS springboot-app /tmp/start-app.sh
+
+      # add health check
+      - name: Health Check
+        uses: appleboy/ssh-action@v0.1.8
+        with:
+          host: ${{ secrets.POTATO_HOST }}
+          username: ${{ secrets.POTATO_USER }}
+          password: ${{ secrets.POTATO_KEY }}
+          script: |
+            curl -f http://localhost:8081/actuator/health || (echo "Application health check failed!" && exit 1)
+
+      # upload logs
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-logs
+          path: logs/
+
+
