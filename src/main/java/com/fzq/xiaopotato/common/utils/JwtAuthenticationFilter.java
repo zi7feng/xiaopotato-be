@@ -57,10 +57,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // get JWT from the Authorization header
 
         if (request.getHeader("Authorization") == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
-        }
-        if (request.getHeader("Authorization") == null) {
-            throw new BusinessException(ErrorCode.NULL_ERROR);
+//            throw new BusinessException(ErrorCode.NULL_ERROR);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Authorization header is missing");
+            return;
         }
         String token = java.net.URLDecoder.decode(request.getHeader("Authorization"), "UTF-8");
 
