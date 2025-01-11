@@ -134,7 +134,7 @@ public class TagRecommendationUtils {
             int editDistanceScore = calculateEditDistanceScore(userTags, postTags);
 
 //            logger.info("jaccard similarity: {}", jaccardSimilarity);
-            logger.info("edit distance score: {}", editDistanceScore);
+//            logger.info("edit distance score: {}", editDistanceScore);
 
             // 计算总分并加上波动系数
             double fluctuationFactor = 0.9 + (Math.random() * 0.2);
