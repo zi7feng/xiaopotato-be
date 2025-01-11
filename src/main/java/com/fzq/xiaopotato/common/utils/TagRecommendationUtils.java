@@ -88,7 +88,7 @@ public class TagRecommendationUtils {
                                                                   UsertagMapper usertagMapper,
                                                                   PosttagMapper posttagMapper,
                                                                   TagMapper tagMapper) {
-        logger.info("Generating recommended posts on thread: {}", Thread.currentThread().getId());
+//        logger.info("Generating recommended posts on thread: {}", Thread.currentThread().getId());
 
         // 获取用户的所有标签ID
         List<Long> userTagIds = usertagMapper.selectList(
@@ -98,7 +98,7 @@ public class TagRecommendationUtils {
                 .collect(Collectors.toList());
 
         if (userTagIds.isEmpty()) {
-            logger.info("User with ID {} has no tags, skipping recommendation generation.", userId);
+//            logger.info("User with ID {} has no tags, skipping recommendation generation.", userId);
             cacheRecommendedPosts(userId, Collections.emptyList());  // 缓存空列表
             return CompletableFuture.completedFuture(Collections.emptyList());
         }
@@ -114,7 +114,7 @@ public class TagRecommendationUtils {
 
 
         for (Long postId : postIds) {
-            logger.info("Starting calculation on Post: {}", postId);
+//            logger.info("Starting calculation on Post: {}", postId);
 
             // 获取帖子的标签ID和内容
             List<Long> postTagIds = posttagMapper.selectList(
@@ -133,13 +133,13 @@ public class TagRecommendationUtils {
             double jaccardSimilarity = calculateJaccardSimilarity(userTags, postTags);
             int editDistanceScore = calculateEditDistanceScore(userTags, postTags);
 
-            logger.info("jaccard similarity: {}", jaccardSimilarity);
+//            logger.info("jaccard similarity: {}", jaccardSimilarity);
             logger.info("edit distance score: {}", editDistanceScore);
 
             // 计算总分并加上波动系数
             double fluctuationFactor = 0.9 + (Math.random() * 0.2);
             double totalScore = ((-0.85) * jaccardSimilarity - 0.15 * editDistanceScore) * fluctuationFactor;
-            logger.info("total: {}", totalScore);
+//            logger.info("total: {}", totalScore);
 
             postScores.put(postId, totalScore);
         }
@@ -157,7 +157,7 @@ public class TagRecommendationUtils {
 
     @Async
     public CompletableFuture<Void> cacheRecommendedPosts(Long userId, List<Long> recommendedPostIds) {
-        logger.info("Caching recommended posts on thread: {}", Thread.currentThread().getId());
+//        logger.info("Caching recommended posts on thread: {}", Thread.currentThread().getId());
         String redisKey = "user_recommendation:" + userId;
         redisTemplate.delete(redisKey);
         redisTemplate.opsForList().rightPushAll(redisKey, recommendedPostIds);
