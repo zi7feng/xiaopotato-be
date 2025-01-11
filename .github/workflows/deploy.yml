@@ -146,7 +146,13 @@ jobs:
           username: ${{ secrets.POTATO_USER }}
           password: ${{ secrets.POTATO_KEY }}
           script: |
-            curl -f http://localhost:8081/actuator/health || (echo "Application health check failed!" && exit 1)
+            for i in {1..10}; do
+              echo "Attempting health check..."
+              curl -f http://localhost:8081/actuator/health && break
+              echo "Waiting for application to start..."
+              sleep 5
+            done || (echo "Application health check failed after 10 attempts!" && exit 1)
+
 
       # upload logs
       - name: Upload logs
