@@ -161,6 +161,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: build-logs
-          path: logs/
+          path: /tmp/logs/
 
 
