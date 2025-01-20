@@ -3,6 +3,7 @@ package com.fzq.xiaopotato.common.utils;
 import com.fzq.xiaopotato.model.vo.UserVO;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -34,10 +35,17 @@ public class JwtUtils {
     }
 
     public Claims getClaimsFromToken(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            if (token == null || !token.isEmpty()) {
+                throw new IllegalArgumentException("Invalid JWT format");
+            }
+            return Jwts.parser()
+                    .setSigningKey(SECRET_KEY)
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (MalformedJwtException e) {
+            throw new RuntimeException("Malformed JWT token", e);
+        }
     }
 
     public boolean isTokenExpired(String token) {
