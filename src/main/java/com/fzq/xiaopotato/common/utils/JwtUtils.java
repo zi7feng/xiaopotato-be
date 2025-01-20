@@ -39,8 +39,8 @@ public class JwtUtils {
 
     public Claims getClaimsFromToken(String token) {
         try {
-            if (token == null || !token.isEmpty()) {
-                logger.error("getClaimsFromToken: token: {}", token);
+            if (token == null || token.isEmpty()) {
+                logger.info("getClaimsFromToken: token: {}", token);
                 throw new IllegalArgumentException("Invalid JWT format");
             }
             return Jwts.parser()
