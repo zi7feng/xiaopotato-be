@@ -63,6 +63,7 @@ public class SocketIOUtils {
             token = token.substring(7).trim();
         }
         if (token != null) {
+            try {
             Claims claims = jwtUtils.getClaimsFromToken(token);
             Long userId = claims.get("id", Long.class);
 
@@ -79,7 +80,10 @@ public class SocketIOUtils {
             // 更新所有通知为已读状态
             notificationService.markNotificationsAsPush(userId);
             log.info("Client connected: {}", client.getSessionId());
-
+            } catch (Exception e) {
+//                throw new RuntimeException(e);
+            log.error("Client connected error: {}", e);
+            }
         }
     }
 
@@ -93,12 +97,17 @@ public class SocketIOUtils {
             token = token.substring(7).trim();
         }
         if (token != null) {
+            try{
             Claims claims = jwtUtils.getClaimsFromToken(token);
             Long userId = claims.get("id", Long.class);
             onlineUsers.remove(userId);
 
             // 移除 Redis 中的在线状态
             redisTemplate.delete(ONLINE_USER_KEY_PREFIX + userId);
+            } catch (Exception e) {
+//                throw new RuntimeException(e);
+                log.error("Client onDisconnect error: {}", e);
+            }
         }
     }
 
@@ -190,6 +199,7 @@ public class SocketIOUtils {
         }
 
         if (token != null) {
+            try{
             Claims claims = jwtUtils.getClaimsFromToken(token);
             Long userId = claims.get("id", Long.class);
 
@@ -201,6 +211,9 @@ public class SocketIOUtils {
                 allNotifications.forEach(notification -> client.sendEvent("pull", notification));
 
                 log.info("Pushed {} notifications (all) to user {}", allNotifications.size(), userId);
+            }} catch (Exception e) {
+//                throw new RuntimeException(e);
+                log.error("Pushed notifications (all) to user error:{}", e);
             }
         }
     }
@@ -212,6 +225,7 @@ public class SocketIOUtils {
         }
 
         if (token != null) {
+            try{
             Claims claims = jwtUtils.getClaimsFromToken(token);
             Long userId = claims.get("id", Long.class);
             if (userId != null) {
@@ -229,6 +243,9 @@ public class SocketIOUtils {
                 }
                 sendRecommendation += 1;
                 log.info("Received heartbeat from user {}", userId);
+            }} catch (Exception e) {
+//                throw new RuntimeException(e);
+                log.error("Received heartbeat from user error: {}", e);
             }
         }
     }

@@ -206,6 +206,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public UserVO getCurrentUser(HttpServletRequest request) {
         String token = request.getHeader("Authorization");
         if (token != null && token.startsWith("Bearer ")) {
+            try{
             token = token.substring(7); // remove Bearer prefix
             if (jwtUtils.isTokenBlacklisted(token)) {
                 // Token in blacklist
@@ -216,6 +217,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             User user = userMapper.selectById(userId);
             if (user != null) {
                 return getSafeUser(user);
+            }
+            } catch (Exception e) {
+//                throw new RuntimeException(e);
             }
         }
         return null;
