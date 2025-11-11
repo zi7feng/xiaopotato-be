@@ -95,4 +95,4 @@ Modify code and git[hub] operation ![git_operation.png](assets/git_operation.png
 
 execute the [sql](src/main/resources/sql/ddl/insertPostDataAndBindUser.sql)
 Use js to craw unsplash image, please check the frontend project: 'node ./puppeteer/index.cjs'
-+1
++2
